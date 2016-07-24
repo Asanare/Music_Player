@@ -13,21 +13,92 @@ import android.support.v7.app.NotificationCompat;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RemoteViews;
-import android.widget.Toast;
 
 public class CurrentSong extends AppCompatActivity {
-    Button btn_play, btn_back, btn_fwd;
     static boolean is_paused = false;
-    Intent playIntent;
-    boolean musicBound = false;
-    String songLoc;
     static AudioService audioService;
-    Button btn_not_play;
-    Button btn_not_next;
-    Button btn_not_back;
     static NotificationCompat.Builder notiBuilder;
     static NotificationManager mNotificationManager;
     static RemoteViews remoteViews;
+    Button btn_play, btn_back, btn_fwd;
+    Intent playIntent;
+    boolean musicBound = false;
+    String songLoc;
+    //connect to the service
+    private ServiceConnection musicConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            AudioService.MusicBinder binder = (AudioService.MusicBinder) service;
+            audioService = binder.getService();
+            audioService.PlayAudio(songLoc);
+            musicBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            musicBound = false;
+
+        }
+    };
+
+    public static void changeState(Context context) {
+        removeAllNotifs();
+        if (is_paused) {
+            createPauseNotification(context);
+            resume();
+            is_paused = false;
+        } else {
+            createPlayNotification(context);
+            pause();
+            is_paused = true;
+        }
+    }
+
+    public static void createPauseNotification(Context context) {
+        Intent play = new Intent(context, MyReceiver.class);
+        play.setAction("com.jmulla.musicplayer.PLAYBUTTONCLICKED");
+        PendingIntent playIntent = PendingIntent.getBroadcast(context, 1, play, PendingIntent.FLAG_CANCEL_CURRENT);
+        //remoteViews = new RemoteViews(context.getPackageName(), R.layout.notification_layout);
+        //remoteViews.setOnClickPendingIntent(R.id.btn_not_play,playIntent);
+        notiBuilder = new NotificationCompat.Builder(context);
+        notiBuilder.setSmallIcon(R.drawable.refresh_icon);
+        //notiBuilder.setContent(remoteViews);
+
+        notiBuilder.addAction(R.drawable.pause_button, "Pause", playIntent);
+        notiBuilder.setOngoing(true);
+        mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(0, notiBuilder.build());
+    }
+
+    public static void removeAllNotifs() {
+        mNotificationManager.cancelAll();
+    }
+
+    public static void createPlayNotification(Context context) {
+        Intent play = new Intent(context, MyReceiver.class);
+        play.setAction("com.jmulla.musicplayer.PLAYBUTTONCLICKED");
+        PendingIntent playIntent = PendingIntent.getBroadcast(context, 1, play, PendingIntent.FLAG_CANCEL_CURRENT);
+        //remoteViews = new RemoteViews(context.getPackageName(),R.layout.notification_layout);
+        //remoteViews.setOnClickPendingIntent(R.id.btn_not_play,playIntent);
+        notiBuilder = new NotificationCompat.Builder(context);
+        //notiBuilder.setContent(remoteViews);
+        notiBuilder.setSmallIcon(R.drawable.refresh_icon);
+
+        notiBuilder.addAction(R.drawable.play_button, "Play", playIntent);
+        notiBuilder.setOngoing(true);
+        mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        mNotificationManager.notify(0, notiBuilder.build());
+    }
+
+    public static void resume() {
+        audioService.ResumeAudio();
+    }
+
+    public static void pause() {
+        audioService.PauseAudio();
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -35,8 +106,6 @@ public class CurrentSong extends AppCompatActivity {
         btn_play = (Button) findViewById(R.id.btn_play_pause);
         btn_back = (Button) findViewById(R.id.btn_back);
         btn_fwd = (Button) findViewById(R.id.btn_fwd);
-        btn_not_next = (Button) findViewById(R.id.btn_not_next);
-        btn_not_back = (Button) findViewById(R.id.btn_not_back);
         Intent intent = getIntent();
         songLoc = intent.getStringExtra("SONG_LOCATION");
         createPauseNotification(this);
@@ -45,11 +114,11 @@ public class CurrentSong extends AppCompatActivity {
             public void onClick(View v) {
                 //Toast.makeText(getApplicationContext(),"Clicked", Toast.LENGTH_SHORT).show();
                 if (is_paused) {
-                    audioService.ResumeAudio();
+                    resume();
                     btn_play.setText("Pause");
                     is_paused = false;
                 } else {
-                    audioService.PauseAudio();
+                    resume();
                     btn_play.setText("Play");
                     is_paused = true;
                 }
@@ -57,58 +126,7 @@ public class CurrentSong extends AppCompatActivity {
         });
 
     }
-    public static void changeState(Context context){
-        removeAllNotifs();
-        if (is_paused){
-            createPauseNotification(context);
-            audioService.ResumeAudio();
-            is_paused = false;
-        }
-        else {
-            createPlayNotification(context);
-            audioService.PauseAudio();
-            is_paused = true;
-        }
-    }
-    public static void createPauseNotification(Context context){
-        Intent play = new Intent(context, MyReceiver.class);
-        play.setAction("com.jmulla.musicplayer.PLAYBUTTONCLICKED");
-        PendingIntent playIntent = PendingIntent.getBroadcast(context, 1, play, PendingIntent.FLAG_CANCEL_CURRENT);
-        remoteViews = new RemoteViews(context.getPackageName(),
-                R.layout.notification_layout);
-        notiBuilder = new NotificationCompat.Builder(context);
-        notiBuilder.setSmallIcon(R.drawable.refresh_icon);
-        //notiBuilder.setContent(remoteViews);
-        remoteViews.setOnClickPendingIntent(R.id.btn_not_play,playIntent);
-        notiBuilder.addAction(R.drawable.pause_button, "Pause", playIntent);
-        notiBuilder.setOngoing(true);
-        mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(0, notiBuilder.build());
-    }
-    public static void removeAllNotifs(){
-        mNotificationManager.cancelAll();
-    }
-    public static void createPlayNotification(Context context){
-        Intent play = new Intent(context, MyReceiver.class);
-        play.setAction("com.jmulla.musicplayer.PLAYBUTTONCLICKED");
-        PendingIntent playIntent = PendingIntent.getBroadcast(context, 1, play, PendingIntent.FLAG_CANCEL_CURRENT);
-        remoteViews = new RemoteViews(context.getPackageName(),
-                R.layout.notification_layout);
-        notiBuilder = new NotificationCompat.Builder(context);
-        notiBuilder.setSmallIcon(R.drawable.refresh_icon);
-        notiBuilder.setContent(remoteViews);
-        remoteViews.setOnClickPendingIntent(R.id.btn_not_play,playIntent);
-        notiBuilder.addAction(R.drawable.play_button, "Play", playIntent);
-        notiBuilder.setOngoing(true);
-        mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(0, notiBuilder.build());
-    }
-    public void changeText(){
 
-    }
-    public void MakeText() {
-        Toast.makeText(getBaseContext(), "Test", Toast.LENGTH_SHORT).show();
-    }
 
     @Override
     protected void onStart() {
@@ -130,30 +148,6 @@ public class CurrentSong extends AppCompatActivity {
             musicBound = false;
         }
     }
-
-    public static void play(String location) {
-        audioService.PlayAudio(location);
-    }
-    public static void pause(){audioService.PauseAudio();}
-    //connect to the service
-    private ServiceConnection musicConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            AudioService.MusicBinder binder = (AudioService.MusicBinder) service;
-            //get service
-            audioService = binder.getService();
-            //pass list
-            audioService.PlayAudio(songLoc);
-            musicBound = true;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            musicBound = false;
-
-        }
-    };
 
 
 }
