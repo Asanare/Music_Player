@@ -10,9 +10,11 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RemoteViews;
+import android.widget.Toast;
 
 public class CurrentSong extends AppCompatActivity {
     static boolean is_paused = false;
@@ -20,10 +22,15 @@ public class CurrentSong extends AppCompatActivity {
     static NotificationCompat.Builder notiBuilder;
     static NotificationManager mNotificationManager;
     static RemoteViews remoteViews;
-    Button btn_play, btn_back, btn_fwd;
+    static Button btn_play;
+    Button btn_back;
+    Button btn_fwd;
     Intent playIntent;
     boolean musicBound = false;
     String songLoc;
+    static String songArtist;
+    static String songDuration;
+    static String songTitle;
     //connect to the service
     private ServiceConnection musicConnection = new ServiceConnection() {
 
@@ -43,14 +50,23 @@ public class CurrentSong extends AppCompatActivity {
     };
 
     public static void changeState(Context context) {
-        removeAllNotifs();
         if (is_paused) {
             createPauseNotification(context);
             resume();
+            try {
+                btn_play.setText("Pause");
+            } catch (Exception e) {
+                Log.d("Exception e", e.toString());
+            }
             is_paused = false;
         } else {
             createPlayNotification(context);
             pause();
+            try {
+                btn_play.setText("Play");
+            } catch (Exception e) {
+                Log.d("Exception e", e.toString());
+            }
             is_paused = true;
         }
     }
@@ -64,8 +80,12 @@ public class CurrentSong extends AppCompatActivity {
         notiBuilder = new NotificationCompat.Builder(context);
         notiBuilder.setSmallIcon(R.drawable.refresh_icon);
         //notiBuilder.setContent(remoteViews);
-
+        notiBuilder.setContentTitle(songTitle);
+        notiBuilder.setContentText(songArtist);
+        notiBuilder.setContentInfo(songDuration);
+        notiBuilder.setWhen(0);
         notiBuilder.addAction(R.drawable.pause_button, "Pause", playIntent);
+        //notiBuilder.addAction(R.drawable.next_button, "Next", playIntent);
         notiBuilder.setOngoing(true);
         mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(0, notiBuilder.build());
@@ -84,8 +104,12 @@ public class CurrentSong extends AppCompatActivity {
         notiBuilder = new NotificationCompat.Builder(context);
         //notiBuilder.setContent(remoteViews);
         notiBuilder.setSmallIcon(R.drawable.refresh_icon);
-
+        notiBuilder.setContentTitle(songTitle);
+        notiBuilder.setContentText(songArtist);
+        notiBuilder.setContentInfo(songDuration);
+        notiBuilder.setWhen(0);
         notiBuilder.addAction(R.drawable.play_button, "Play", playIntent);
+        //notiBuilder.addAction(R.drawable.next_button, "Next", playIntent);
         notiBuilder.setOngoing(true);
         mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         mNotificationManager.notify(0, notiBuilder.build());
@@ -108,25 +132,31 @@ public class CurrentSong extends AppCompatActivity {
         btn_fwd = (Button) findViewById(R.id.btn_fwd);
         Intent intent = getIntent();
         songLoc = intent.getStringExtra("SONG_LOCATION");
-        createPauseNotification(this);
+        songArtist = intent.getStringExtra("SONG_ARTIST");
+        songDuration = Utilities.getDurationBreakdown(Long.parseLong(intent.getStringExtra("SONG_DURATION")));
+        songTitle = intent.getStringExtra("SONG_TITLE");
+        makeToast(this, "Created");
+
+        if (is_paused) {
+            createPlayNotification(this);
+            btn_play.setText("Play");
+        } else {
+            createPauseNotification(this);
+            btn_play.setText("Pause");
+        }
         btn_play.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Toast.makeText(getApplicationContext(),"Clicked", Toast.LENGTH_SHORT).show();
-                if (is_paused) {
-                    resume();
-                    btn_play.setText("Pause");
-                    is_paused = false;
-                } else {
-                    resume();
-                    btn_play.setText("Play");
-                    is_paused = true;
-                }
+                changeState(getBaseContext());
+
             }
         });
 
     }
 
+    public static void makeToast(Context context, String text) {
+        Toast.makeText(context, text, Toast.LENGTH_SHORT).show();
+    }
 
     @Override
     protected void onStart() {
@@ -136,6 +166,7 @@ public class CurrentSong extends AppCompatActivity {
             playIntent = new Intent(this, AudioService.class);
             startService(playIntent);
             bindService(playIntent, musicConnection, Context.BIND_AUTO_CREATE);
+            makeToast(this, "Bound");
         }
 
     }
@@ -146,6 +177,7 @@ public class CurrentSong extends AppCompatActivity {
         if (musicBound) {
             unbindService(musicConnection);
             musicBound = false;
+            makeToast(this, "Unbound");
         }
     }
 

@@ -17,6 +17,7 @@ public class AudioService extends Service implements
     private ArrayList<Song> songs;
     private int songPosition;
     private IBinder iBinder = new MusicBinder();
+    private boolean isPlaying = false;
 
     public AudioService() {
     }
@@ -35,18 +36,21 @@ public class AudioService extends Service implements
     }
 
     public void PlayAudio(String location){
+        if (!isPlaying){
+            try {
+                mp.reset();
+                mp.setDataSource(location);
+                mp.prepareAsync();
+                isPlaying = true;
 
-        try {
-            mp.reset();
-            mp.setDataSource(location);
-            mp.prepareAsync();
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
     public  void ResumeAudio(){
         mp.start();
+        CurrentSong.makeToast(getBaseContext(), "Resumed");
     }
     public  void PauseAudio(){
         mp.pause();
@@ -63,6 +67,7 @@ public class AudioService extends Service implements
     @Override
     public void onDestroy() {
         super.onDestroy();
+        isPlaying = false;
         mp.stop();
         mp.release();
     }
@@ -82,7 +87,7 @@ public class AudioService extends Service implements
 
     @Override
     public void onCompletion(MediaPlayer mp) {
-
+        isPlaying = false;
     }
     public class MusicBinder extends Binder {
         AudioService getService() {
