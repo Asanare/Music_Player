@@ -68,15 +68,23 @@ public class SongsTab extends ListFragment {
                 unselect(selectedItem);
             }
         };
-        final ListView listView = getListView();
+        listView = getListView();
         listView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
             @Override
             public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
                 getActivity().startActionMode(mActionModeCallback);
-
-                View selectedView = view;
-                selectedView.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
-                selectedItem = selectedView;
+                ((SongsListAdapter) parent.getAdapter()).selectedIds.clear();
+                ArrayList<Integer> selectedIds = ((SongsListAdapter) parent.getAdapter()).selectedIds;
+                if(selectedIds.contains(position)){
+                    //view.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
+                    selectedIds.remove(position);
+                }
+                else {
+                    selectedIds.add(position);
+                    //view.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimaryDark));
+                }
+                ((SongsListAdapter) parent.getAdapter()).notifyDataSetChanged();
+                selectedItem = view;
                 return true;
             }
 
