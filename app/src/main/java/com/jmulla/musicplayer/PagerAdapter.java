@@ -3,11 +3,12 @@ package com.jmulla.musicplayer;
 /**
  * Created by Jamal on 13/07/2016.
  */
+
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.app.FragmentPagerAdapter;
 
-public class PagerAdapter extends FragmentStatePagerAdapter {
+public class PagerAdapter extends FragmentPagerAdapter {
     int mNumOfTabs;
 
     public PagerAdapter(FragmentManager fm, int NumOfTabs) {
@@ -22,7 +23,7 @@ public class PagerAdapter extends FragmentStatePagerAdapter {
             case 0:
                 return new ArtistsTab();
             case 1:
-                return new SongsTab();
+                return Listfragment.newInstance();
             case 2:
                 return new PlaylistsTab();
             default:

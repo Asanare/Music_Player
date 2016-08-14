@@ -1,8 +1,11 @@
+/*
 package com.jmulla.musicplayer;
 
+*/
 /**
  * Created by Jamal on 13/07/2016.
- */
+ *//*
+
 
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
@@ -149,3 +152,4 @@ public class SongsTab extends ListFragment {
     }
 }
 
+*/

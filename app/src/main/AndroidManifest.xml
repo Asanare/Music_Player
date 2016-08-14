@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -18,14 +19,28 @@
             </intent-filter>
         </activity>
         <activity android:name=".CurrentSong" />
-        <receiver android:name="MyReceiver">
 
-        <intent-filter>
-            <action android:name="com.jmulla.musicplayer.PLAYBUTTONCLICKED">
-            </action>
-        </intent-filter>
+        <receiver android:name=".ChangeStateReceiver">
 
-    </receiver>
+            <!--<intent-filter>
+                <action android:name="com.jmulla.musicplayer.CHANGE_STATE_BUTTON_CLICKED"></action>
+            </intent-filter>-->
+
+        </receiver>
+        <receiver android:name=".NextButtonReceiver">
+
+            <!--<intent-filter>
+                <action android:name="com.jmulla.musicplayer.NEXT_BUTTON_CLICKED"></action>
+            </intent-filter>-->
+
+        </receiver>
+        <receiver android:name=".BackButtonReceiver">
+
+            <!--<intent-filter>
+                <action android:name="com.jmulla.musicplayer.BACK_BUTTON_CLICKED"></action>
+            </intent-filter>-->
+
+        </receiver>
         <service
             android:name=".AudioService"
             android:enabled="true"

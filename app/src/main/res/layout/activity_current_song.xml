@@ -38,4 +38,54 @@
         android:layout_toLeftOf="@+id/btn_play_pause"
         android:layout_toStartOf="@+id/btn_play_pause"
         android:textColor="@color/colorPrimaryDark"/>
+
+    <SeekBar
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/sb_progress"
+        android:layout_above="@+id/btn_play_pause"
+        android:layout_alignEnd="@+id/btn_fwd"
+        android:max="10000"
+        android:progress="0"
+        android:indeterminate="false"
+        android:layout_alignStart="@+id/btn_back" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Repeat"
+        android:id="@+id/btn_current_repeat"
+        android:textColor="@color/colorPrimaryDark"
+        android:layout_below="@+id/tv_current_artist"
+        android:layout_alignParentStart="true" />
+
+    <Button
+        style="?android:attr/buttonStyleSmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Shuffle"
+        android:textColor="@color/colorPrimaryDark"
+        android:id="@+id/btn_current_shuffle"
+        android:layout_below="@+id/btn_current_repeat"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="Title"
+        android:id="@+id/tv_current_title"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="Artist"
+        android:id="@+id/tv_current_artist"
+        android:layout_below="@+id/tv_current_title"
+        android:layout_alignParentStart="true" />
+
 </RelativeLayout>

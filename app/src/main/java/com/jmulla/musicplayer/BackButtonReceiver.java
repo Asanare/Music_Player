@@ -5,13 +5,11 @@ import android.content.Context;
 import android.content.Intent;
 
 /**
- * Created by Jamal on 23/07/2016.
+ * Created by Jamal on 12/08/2016.
  */
-public class MyReceiver extends BroadcastReceiver {
-
+public class BackButtonReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        //Toast.makeText(context, "Intent.", Toast.LENGTH_LONG).show();
-        CurrentSong.changeState(context);
+
     }
 }
