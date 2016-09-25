@@ -16,6 +16,12 @@ public class Manager extends Activity {
     public static Song currentSong;
     public static AudioService audioService;
     public static ArrayList<Song> currentSongList;
+    public enum State  {
+        NORMAL,
+        SHUFFLE,
+        REPEAT_ONE
+    }
+    public static State currentState = State.NORMAL;
     public ArrayList<ArrayList<String>> getAllMusicData(Context context, int type) {
         Cursor cursor;
         //ArrayList<String> ids = new ArrayList<>(), artists = new ArrayList<>(), titles= new ArrayList<>(), paths= new ArrayList<>(), display_names= new ArrayList<>(), durations_ms= new ArrayList<>();
@@ -52,7 +58,7 @@ public class Manager extends Activity {
                 songData.add(cursor.getString(2));
                 songData.add(cursor.getString(3));
                 songData.add(cursor.getString(4));
-                songData.add(Utilities.getDurationBreakdown(Long.parseLong(cursor.getString(5))));
+                songData.add(cursor.getString(5));
                 songs.add(songData);
             }
         }

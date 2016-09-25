@@ -48,7 +48,7 @@ public class SongsListAdapter extends DragItemAdapter<Pair<Long, Song>, SongsLis
         }
         holder.mTitle.setText(mItemList.get(position).second.title);
         holder.mArtist.setText(mItemList.get(position).second.artist);
-        holder.mDuration.setText(mItemList.get(position).second.duration);
+        holder.mDuration.setText(Utilities.getMinutesFromMillis(Long.parseLong(mItemList.get(position).second.duration)));
         //holder.itemView.setTag(mItemList.get(position).second.title);
     }
 

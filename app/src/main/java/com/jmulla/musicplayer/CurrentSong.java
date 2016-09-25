@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
@@ -27,12 +28,13 @@ public class CurrentSong extends AppCompatActivity {
     static NotificationManager mNotificationManager;
     static RemoteViews remoteViews;
     static Button btn_play;
+
     Button btn_back;
     Button btn_fwd;
     Button btn_repeat;
     Button btn_shuffle;
-    TextView tv_title;
-    TextView tv_artist;
+    static TextView tv_title;
+    static TextView tv_artist;
     Intent playIntent;
     static SeekBar seekBar;
 
@@ -70,7 +72,7 @@ public class CurrentSong extends AppCompatActivity {
             //createPauseNotification(context);
             resume();
             try {
-                btn_play.setText("Pause");
+                btn_play.setBackgroundResource(R.drawable.pause_button);
             } catch (Exception e) {
                 Log.d("Exception e", e.toString());
             }
@@ -80,7 +82,7 @@ public class CurrentSong extends AppCompatActivity {
             //createPlayNotification(context);
             pause();
             try {
-                btn_play.setText("Play");
+                btn_play.setBackgroundResource(R.drawable.play_button);
             } catch (Exception e) {
                 Log.d("Exception e", e.toString());
             }
@@ -121,7 +123,7 @@ public class CurrentSong extends AppCompatActivity {
         notiBuilder.setSmallIcon(R.drawable.refresh_icon);
         notiBuilder.setContentTitle(Manager.currentSong.title);
         notiBuilder.setContentText(Manager.currentSong.artist);
-        notiBuilder.setContentInfo(Manager.currentSong.duration);
+        notiBuilder.setContentInfo(Utilities.getMinutesFromMillis(Long.parseLong(Manager.currentSong.duration)));
         notiBuilder.setWhen(0);
         //notiBuilder.addAction(R.drawable.next_button, "Next", nextIntent);
 
@@ -168,14 +170,73 @@ public class CurrentSong extends AppCompatActivity {
         audioService.PauseAudio();
     }
 
+    public static void fillInfo(){
+
+        tv_title.setText(Manager.currentSong.title);
+        tv_artist.setText(Manager.currentSong.artist);
+        assert seekBar!= null;
+        seekBar.setMax(Integer.parseInt(Manager.currentSong.duration));
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current_song);
         seekBar = (SeekBar) findViewById(R.id.sb_progress);
+
+        final Handler mHandler = new Handler();
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                if(AudioService.mp != null){
+                    int mCurrentPosition = AudioService.mp.getCurrentPosition();
+                    seekBar.setProgress(mCurrentPosition);
+                }
+                mHandler.postDelayed(this, 1000);
+            }
+        });
+
+        tv_title = (TextView) findViewById(R.id.tv_current_title);
+        tv_artist = (TextView) findViewById(R.id.tv_current_artist) ;
         btn_play = (Button) findViewById(R.id.btn_play_pause);
         btn_back = (Button) findViewById(R.id.btn_back);
         btn_fwd = (Button) findViewById(R.id.btn_fwd);
+        btn_repeat = (Button) findViewById(R.id.btn_current_repeat);
+        btn_shuffle = (Button) findViewById(R.id.btn_current_shuffle);
+        btn_repeat.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (Manager.currentState == Manager.State.REPEAT_ONE){
+                    Manager.currentState = Manager.State.NORMAL;
+                }
+                else if(Manager.currentState == Manager.State.NORMAL || Manager.currentState == Manager.State.SHUFFLE){
+                    Manager.currentState = Manager.State.REPEAT_ONE;
+                    makeToast(getApplicationContext(), "REPEATING");
+                }
+            }
+        });
+        btn_shuffle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (Manager.currentState == Manager.State.SHUFFLE){
+                    Manager.currentState = Manager.State.NORMAL;
+                }
+                else if (Manager.currentState == Manager.State.NORMAL || Manager.currentState == Manager.State.REPEAT_ONE){
+                    Manager.currentState = Manager.State.SHUFFLE;
+                }
+            }
+        });
+        btn_back.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Back();
+            }
+        });
+        btn_fwd.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Forward();
+            }
+        });
         Intent intent = getIntent();
         /*songId = intent.getStringExtra("SONG_ID");
         songLoc = intent.getStringExtra("SONG_LOCATION");
@@ -190,16 +251,33 @@ public class CurrentSong extends AppCompatActivity {
         songTitle = CS.title;
         startPos = intent.getIntExtra("START_POSITION", 0);
         //allSongs = (ArrayList<Song>) intent.getExtras().getSerializable("Songs");
+        fillInfo();
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (Manager.audioService.isPrepared && fromUser) {
+                    Manager.audioService.seekTo(progress);
+                }
+            }
 
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
 
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
         if (is_paused) {
             createPlaybackNotification(this, 1);
             //createPlayNotification(this);
-            btn_play.setText("Play");
+            btn_play.setBackgroundResource(R.drawable.play_button);
         } else {
             createPlaybackNotification(this, 0);
             //createPauseNotification(this);
-            btn_play.setText("Pause");
+            btn_play.setBackgroundResource(R.drawable.pause_button);
         }
         btn_play.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -211,6 +289,18 @@ public class CurrentSong extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        fillInfo();
+    }
+
+    private void Back() {
+        audioService.PreviousSong();
+    }
+    private void Forward(){
+        audioService.NextSong();
+    }
     public static void makeToast(Context context, Object object) {
         try {
             Toast.makeText(context, String.valueOf(object), Toast.LENGTH_SHORT).show();

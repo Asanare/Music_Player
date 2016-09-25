@@ -24,7 +24,7 @@ public class Song implements Serializable {
     public static ArrayList<Song> getSong(ArrayList<ArrayList<String>> songInfoSent) {
         ArrayList<Song> songInfo = new ArrayList<>();
         for (int i=0;i<songInfoSent.size();i++) {
-            songInfo.add(new Song((songInfoSent.get(i)).get(0), (songInfoSent.get(i)).get(2), (songInfoSent.get(i)).get(1), (songInfoSent.get(i)).get(5), (songInfoSent.get(i).get(3))));
+            songInfo.add(new Song((songInfoSent.get(i)).get(0), (songInfoSent.get(i)).get(2), (songInfoSent.get(i)).get(1), (songInfoSent.get(i).get(5)), (songInfoSent.get(i).get(3))));
         }
         return songInfo;
     }
