@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <com.rarepebble.colorpicker.ColorPreference
+        android:defaultValue="@color/colorPrimary"
+        android:key="colour_primary"
+        android:textColor="@color/colorLight"
+        android:title="Primary Color" />
+    <com.rarepebble.colorpicker.ColorPreference
+        android:defaultValue="@color/colorPrimaryDark"
+        android:key="colour_secondary"
+        android:textColor="@color/colorLight"
+        android:title="Secondary Color" />
+    <CheckBoxPreference
+        android:defaultValue="true"
+        android:key="notification_controls"
+        android:summary="Selecting this option enables notification controls"
+        android:textColor="@color/colorLight"
+        android:title="Enable notification control" />
+
+</PreferenceScreen>

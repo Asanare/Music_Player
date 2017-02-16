@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+    <item
+        android:id="@+id/song_delete"
+        android:icon="@drawable/delete_forever"
+        android:title="Permanently delete"
+        app:showAsAction="ifRoom"
+        tools:ignore="AppCompatResource"></item>
+    <item
+        android:id="@+id/song_blacklist"
+        android:icon="@drawable/delete"
+        android:title="Delete from app"
+        app:showAsAction="always"
+        tools:ignore="AppCompatResource"></item>
+    <item
+        android:id="@+id/song_add_to_playlist"
+        android:icon="@drawable/add_playlist"
+        android:title="Add to playlist"
+        app:showAsAction="always"
+        tools:ignore="AppCompatResource"></item>
+    <item
+        android:id="@+id/song_top_queue"
+        android:icon="@drawable/top_of_queue"
+        android:title="Top of queue"
+        app:showAsAction="always"
+        tools:ignore="AppCompatResource"></item>
+    <item
+        android:id="@+id/song_bottom_queue"
+        android:icon="@drawable/bottom_of_queue"
+        android:title="Bottom of queue"
+        app:showAsAction="always"
+        tools:ignore="AppCompatResource"></item>
+    <item
+        android:id="@+id/song_edit_tags"
+        android:icon="@drawable/edit_tags"
+        android:title="Edit tags"
+        app:showAsAction="ifRoom"
+        tools:ignore="AppCompatResource"></item>
+    <item
+        android:id="@+id/song_rename"
+        android:icon="@drawable/rename"
+        android:title="Rename song"
+        app:showAsAction="ifRoom"></item>
+</menu>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -9,83 +10,105 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.jmulla.musicplayer.CurrentSong">
 
-    <Button
+    <TextView
+        android:id="@+id/tv_current_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Pause"
-        android:id="@+id/btn_play_pause"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="95dp"
-        android:textColor="@color/colorPrimaryDark" />
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:text="Title"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <Button
+    <TextView
+        android:id="@+id/tv_current_artist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Forward"
-        android:id="@+id/btn_fwd"
-        android:layout_alignBottom="@+id/btn_play_pause"
-        android:layout_toRightOf="@+id/btn_play_pause"
-        android:layout_toEndOf="@+id/btn_play_pause"
-        android:textColor="@color/colorPrimaryDark"/>
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/tv_current_title"
+        android:text="Artist"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Backwards"
-        android:id="@+id/btn_back"
-        android:layout_alignBottom="@+id/btn_play_pause"
-        android:layout_toLeftOf="@+id/btn_play_pause"
-        android:layout_toStartOf="@+id/btn_play_pause"
-        android:textColor="@color/colorPrimaryDark"/>
 
     <SeekBar
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:id="@+id/sb_progress"
-        android:layout_above="@+id/btn_play_pause"
-        android:layout_alignEnd="@+id/btn_fwd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/ll_buttons"
+        android:layout_below="@+id/img_cover_art"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="42dp"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:indeterminate="false"
         android:max="10000"
         android:progress="0"
-        android:indeterminate="false"
-        android:layout_alignStart="@+id/btn_back" />
+        android:progressDrawable="@drawable/white_scrubber_progress"
+        android:thumb="@drawable/white_scrubber_control" />
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
+    <LinearLayout
+        android:id="@+id/ll_buttons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Repeat"
-        android:id="@+id/btn_current_repeat"
-        android:textColor="@color/colorPrimaryDark"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="52dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/btn_back"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginStart="20dp"
+            android:allowUndo="false"
+
+            android:background="@drawable/back_button" />
+
+        <Button
+            android:id="@+id/btn_play_pause"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="@drawable/pause_button"
+            android:elevation="0dp" />
+
+        <Button
+            android:id="@+id/btn_fwd"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginStart="37dp"
+            android:background="@drawable/next_button" />
+
+    </LinearLayout>
+
+    <Switch
+        android:id="@+id/sw_current_repeat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_below="@+id/tv_current_artist"
-        android:layout_alignParentStart="true" />
+        android:layout_marginTop="54dp"
+        android:text="Repeat" />
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
+    <Switch
+        android:id="@+id/sw_current_shuffle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Shuffle"
-        android:textColor="@color/colorPrimaryDark"
-        android:id="@+id/btn_current_shuffle"
-        android:layout_below="@+id/btn_current_repeat"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/tv_current_artist"
+        android:layout_marginTop="17dp"
+        android:text="Shuffle" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Title"
-        android:id="@+id/tv_current_title"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentStart="true" />
+    <ImageView
+        android:id="@+id/img_cover_art"
+        android:layout_width="150dp"
+        android:layout_height="150dp"
+        android:layout_below="@+id/sw_current_repeat"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="22dp"
+        app:srcCompat="@drawable/ic_launcher" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceMedium"
-        android:text="Artist"
-        android:id="@+id/tv_current_artist"
-        android:layout_below="@+id/tv_current_title"
-        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

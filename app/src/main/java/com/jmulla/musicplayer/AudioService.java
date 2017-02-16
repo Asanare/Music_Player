@@ -1,6 +1,7 @@
 package com.jmulla.musicplayer;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -15,12 +16,49 @@ public class AudioService extends Service implements
         MediaPlayer.OnPreparedListener, MediaPlayer.OnErrorListener,
         MediaPlayer.OnCompletionListener {
     public static MediaPlayer mp;
+    //Timer timer = new Timer();
+    public boolean isPrepared = false;
     private int songPosition = 0;
     private IBinder iBinder = new MusicBinder();
     private boolean isPlaying = false;
     private String lastSongId;
-    //Timer timer = new Timer();
-    public boolean isPrepared = false;
+    private AudioManager.OnAudioFocusChangeListener mOnAudioFocusChangeListener = new AudioManager.OnAudioFocusChangeListener() {
+
+        @Override
+        public void onAudioFocusChange(int focusChange) {
+            switch (focusChange) {
+                case AudioManager.AUDIOFOCUS_GAIN:
+                    CurrentSong.makeToast(getApplicationContext(), "AUDIOFOCUS_GAIN");
+                    //restart/resume your sound
+                    CurrentSong.changeState(getApplicationContext());
+                    mp.setVolume(1, 1);
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS:
+                    CurrentSong.makeToast(getApplicationContext(), "AUDIOFOCUS_LOSS");
+                    //CurrentSong.changeState(getApplicationContext());
+                    mp.stop();
+                    //Loss of audio focus for a long time
+                    //Stop playing the sound
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT:
+                    CurrentSong.makeToast(getApplicationContext(), "AUDIOFOCUS_LOSS_TRANSIENT");
+                    CurrentSong.changeState(getApplicationContext());
+                    //Loss of audio focus for a short time
+                    //Pause playing the sound
+                    break;
+                case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:
+                    CurrentSong.makeToast(getApplicationContext(), "AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK");
+                    //Loss of audio focus for a short time.
+                    //But one can duck. Lower the volume of playing the sound
+                    mp.setVolume(0.5f, 0.5f);
+                    break;
+
+                default:
+                    //
+            }
+        }
+    };
+
     //boolean isTimerWorking = false;
     public AudioService() {
     }
@@ -58,7 +96,10 @@ public class AudioService extends Service implements
             //CurrentSong.changeState(getBaseContext());
             CurrentSong.createPlaybackNotification(getBaseContext(), 0);
             try {
-                mp.stop();
+                if (mp.isPlaying()) {
+                    mp.stop();
+                }
+
                 mp.reset();
                 mp.setDataSource(Manager.currentSong.location);
                 mp.prepareAsync();
@@ -90,15 +131,14 @@ public class AudioService extends Service implements
     }
 
     public void NextSong() {
+        //TODO // FIXME: 28/09/2016 Fix song positions
         //If song has reached the end of the list, go back to the start
-        if (songPosition == (Manager.currentSongList.size() - 1)) {
+        if ((songPosition == (Manager.currentSongList.size()) - 1) && Manager.currentState == Manager.State.NORMAL) {
             songPosition = 0;
-        }
-        if (Manager.currentState == Manager.State.NORMAL)
-        {
+        } else if (Manager.currentState == Manager.State.NORMAL) {
             songPosition = Manager.currentSongList.indexOf(Manager.currentSong)+1;
-            //songPosition++;
         }
+
         else if (Manager.currentState == Manager.State.SHUFFLE){
             Random rand = new Random();
             songPosition = rand.nextInt(Manager.currentSongList.size());
@@ -117,13 +157,17 @@ public class AudioService extends Service implements
             songPosition = 0;
         }
         else {
-            songPosition-=2;
+            songPosition -= 1;
         }
         PlaySong(true);
     }
 
     public void ResumeAudio() {
-        mp.start();
+        try {
+            mp.start();
+        } catch (IllegalStateException e) {
+            e.printStackTrace();
+        }
 /*        if (!isTimerWorking) {
             timer = new Timer();
             scheduleSong(mp.getDuration() - mp.getCurrentPosition());
@@ -147,6 +191,31 @@ public class AudioService extends Service implements
 
     }
 
+    private boolean requestAudioFocusForMyApp(final Context context) {
+        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+
+        // Request audio focus for playback
+        int result = am.requestAudioFocus(mOnAudioFocusChangeListener,
+                // Use the music stream.
+                AudioManager.STREAM_MUSIC,
+                // Request permanent focus.
+                AudioManager.AUDIOFOCUS_GAIN);
+
+        if (result == AudioManager.AUDIOFOCUS_REQUEST_GRANTED) {
+            Log.d("AudioFocus", "Audio focus received");
+            return true;
+        } else {
+            Log.d("AudioFocus", "Audio focus NOT received");
+            return false;
+        }
+    }
+
+    void releaseAudioFocusForMyApp(final Context context) {
+        AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        am.abandonAudioFocus(null);
+    }
+
+
     @Override
     public IBinder onBind(Intent intent) {
         return iBinder;
@@ -159,6 +228,8 @@ public class AudioService extends Service implements
 
     @Override
     public void onDestroy() {
+        Log.i("I", "DEAD");
+        releaseAudioFocusForMyApp(getApplicationContext());
         super.onDestroy();
         isPlaying = false;
         //timer.cancel();
@@ -177,14 +248,17 @@ public class AudioService extends Service implements
     }
 
     @Override
-    public void onPrepared(MediaPlayer mp) {
+    public void onPrepared(MediaPlayer player) {
         isPrepared = true;
-        mp.start();
+        //mp.start();
+        if (requestAudioFocusForMyApp(getApplicationContext())) {
+            player.start();
+        }
         //playNext();
     }
 
     @Override
-    public void onCompletion(MediaPlayer mp) {
+    public void onCompletion(MediaPlayer player) {
         isPlaying = false;
         NextSong();
         CurrentSong.fillInfo();

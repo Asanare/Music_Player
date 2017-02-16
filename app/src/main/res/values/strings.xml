@@ -1,3 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Music Player</string>
+    <string name="title_activity_s">SActivity</string>
+
+    <string-array name="sort_choices">
+        <item>Alphabetical</item>
+        <item>Reverse Alphabetical</item>
+        <item>Duration - High to low</item>
+        <item>Duration - Low to high</item>
+        <item>Artist Name - A to Z</item>
+        <item>Artist Name - Z to A</item>
+        <item>Revert To Queue</item>
+    </string-array>
 </resources>

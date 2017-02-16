@@ -21,11 +21,13 @@ public class PagerAdapter extends FragmentPagerAdapter {
 
         switch (position) {
             case 0:
-                return new ArtistsTab();
-            case 1:
                 return Listfragment.newInstance();
+            case 1:
+                return ArtistsTab.newInstance();
             case 2:
-                return new PlaylistsTab();
+                return AlbumTab.newInstance();
+            case 3:
+                return PlaylistsTab.newInstance();
             default:
                 return null;
         }
@@ -34,5 +36,10 @@ public class PagerAdapter extends FragmentPagerAdapter {
     @Override
     public int getCount() {
         return mNumOfTabs;
+    }
+
+    @Override
+    public int getItemPosition(Object object) {
+        return POSITION_NONE;
     }
 }

@@ -3,7 +3,8 @@
     <color name="colorPrimary">#616161</color>
     <color name="colorPrimaryDark">#212121</color>
     <color name="colorAccent">#000</color>
+    <color name="colorLight">#c1d9ff</color>
     <color name="app_color">#616161</color>
     <color name="list_item_background">#212121</color>
-
+    <color name="colorTextPrimary">#80cbc4</color>
 </resources>

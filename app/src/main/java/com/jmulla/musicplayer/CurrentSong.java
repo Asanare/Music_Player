@@ -3,22 +3,36 @@ package com.jmulla.musicplayer;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ComponentName;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
+import android.provider.DocumentsContract;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
+import android.widget.ImageView;
 import android.widget.RemoteViews;
 import android.widget.SeekBar;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 public class CurrentSong extends AppCompatActivity {
@@ -28,25 +42,26 @@ public class CurrentSong extends AppCompatActivity {
     static NotificationManager mNotificationManager;
     static RemoteViews remoteViews;
     static Button btn_play;
-
-    Button btn_back;
-    Button btn_fwd;
-    Button btn_repeat;
-    Button btn_shuffle;
     static TextView tv_title;
     static TextView tv_artist;
-    Intent playIntent;
     static SeekBar seekBar;
-
-    boolean musicBound = false;
-    String songLoc;
     static String songArtist;
     static String songDuration;
+    static String songAlbum;
+    static String song_cover_loc;
     static String songTitle;
     static String songId;
     public ArrayList<Song> allSongs;
+    Button btn_back;
+    ImageView imageView;
+    Button btn_fwd;
+    Switch sw_repeat;
+    Switch sw_shuffle;
+    Intent playIntent;
+    boolean musicBound = false;
+    String songLoc;
+    String selectedImagePath;
     private int startPos;
-
     private ServiceConnection musicConnection = new ServiceConnection() {
 
         @Override
@@ -65,6 +80,138 @@ public class CurrentSong extends AppCompatActivity {
 
         }
     };
+
+    public static String getPath(final Context context, final Uri uri) {
+
+        //check here to KITKAT or new version
+        final boolean isKitKat = Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
+
+        // DocumentProvider
+        if (isKitKat && DocumentsContract.isDocumentUri(context, uri)) {
+
+            // ExternalStorageProvider
+            if (isExternalStorageDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                if ("primary".equalsIgnoreCase(type)) {
+                    return Environment.getExternalStorageDirectory() + "/" + split[1];
+                }
+            }
+            // DownloadsProvider
+            else if (isDownloadsDocument(uri)) {
+
+                final String id = DocumentsContract.getDocumentId(uri);
+                final Uri contentUri = ContentUris.withAppendedId(
+                        Uri.parse("content://downloads/public_downloads"), Long.valueOf(id));
+
+                return getDataColumn(context, contentUri, null, null);
+            }
+            // MediaProvider
+            else if (isMediaDocument(uri)) {
+                final String docId = DocumentsContract.getDocumentId(uri);
+                final String[] split = docId.split(":");
+                final String type = split[0];
+
+                Uri contentUri = null;
+                if ("image".equals(type)) {
+                    contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                } else if ("video".equals(type)) {
+                    contentUri = MediaStore.Video.Media.EXTERNAL_CONTENT_URI;
+                } else if ("audio".equals(type)) {
+                    contentUri = MediaStore.Audio.Media.EXTERNAL_CONTENT_URI;
+                }
+
+                final String selection = "_id=?";
+                final String[] selectionArgs = new String[]{
+                        split[1]
+                };
+
+                return getDataColumn(context, contentUri, selection, selectionArgs);
+            }
+        }
+        // MediaStore (and general)
+        else if ("content".equalsIgnoreCase(uri.getScheme())) {
+
+            // Return the remote address
+            if (isGooglePhotosUri(uri))
+                return uri.getLastPathSegment();
+
+            return getDataColumn(context, uri, null, null);
+        }
+        // File
+        else if ("file".equalsIgnoreCase(uri.getScheme())) {
+            return uri.getPath();
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the value of the data column for this Uri. This is useful for
+     * MediaStore Uris, and other file-based ContentProviders.
+     *
+     * @param context       The context.
+     * @param uri           The Uri to query.
+     * @param selection     (Optional) Filter used in the query.
+     * @param selectionArgs (Optional) Selection arguments used in the query.
+     * @return The value of the _data column, which is typically a file path.
+     */
+    public static String getDataColumn(Context context, Uri uri, String selection,
+                                       String[] selectionArgs) {
+
+        Cursor cursor = null;
+        final String column = "_data";
+        final String[] projection = {
+                column
+        };
+
+        try {
+            cursor = context.getContentResolver().query(uri, projection, selection, selectionArgs,
+                    null);
+            if (cursor != null && cursor.moveToFirst()) {
+                final int index = cursor.getColumnIndexOrThrow(column);
+                return cursor.getString(index);
+            }
+        } finally {
+            if (cursor != null)
+                cursor.close();
+        }
+        return null;
+    }
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is ExternalStorageProvider.
+     */
+    public static boolean isExternalStorageDocument(Uri uri) {
+        return "com.android.externalstorage.documents".equals(uri.getAuthority());
+    }
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is DownloadsProvider.
+     */
+    public static boolean isDownloadsDocument(Uri uri) {
+        return "com.android.providers.downloads.documents".equals(uri.getAuthority());
+    }
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is MediaProvider.
+     */
+    public static boolean isMediaDocument(Uri uri) {
+        return "com.android.providers.media.documents".equals(uri.getAuthority());
+    }
+
+    /**
+     * @param uri The Uri to check.
+     * @return Whether the Uri authority is Google Photos.
+     */
+    public static boolean isGooglePhotosUri(Uri uri) {
+        return "com.google.android.apps.photos.content".equals(uri.getAuthority());
+    }
 
     public static void changeState(Context context) {
         if (is_paused) {
@@ -90,25 +237,6 @@ public class CurrentSong extends AppCompatActivity {
         }
     }
 
-    /*    public static void createPauseNotification(Context context) {
-            Intent play = new Intent(context, MyReceiver.class);
-            play.setAction("com.jmulla.musicplayer.PLAYBUTTONCLICKED");
-            PendingIntent playIntent = PendingIntent.getBroadcast(context, 1, play, PendingIntent.FLAG_CANCEL_CURRENT);
-            //remoteViews = new RemoteViews(context.getPackageName(), R.layout.notification_layout);
-            //remoteViews.setOnClickPendingIntent(R.id.btn_not_play,playIntent);
-            notiBuilder = new NotificationCompat.Builder(context);
-            notiBuilder.setSmallIcon(R.drawable.refresh_icon);
-            //notiBuilder.setContent(remoteViews);
-            notiBuilder.setContentTitle(songTitle);
-            notiBuilder.setContentText(songArtist);
-            notiBuilder.setContentInfo(songDuration);
-            notiBuilder.setWhen(0);
-            notiBuilder.addAction(R.drawable.pause_button, "Pause", playIntent);
-            //notiBuilder.addAction(R.drawable.next_button, "Next", playIntent);
-            notiBuilder.setOngoing(true);
-            mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            mNotificationManager.notify(0, notiBuilder.build());
-        }*/
     public static void createPlaybackNotification(Context context, int state) {
         Intent play = new Intent(context, ChangeStateReceiver.class);
         play.setAction("com.jmulla.musicplayer.CHANGE_STATE_BUTTON_CLICKED");
@@ -125,8 +253,25 @@ public class CurrentSong extends AppCompatActivity {
         notiBuilder.setContentText(Manager.currentSong.artist);
         notiBuilder.setContentInfo(Utilities.getMinutesFromMillis(Long.parseLong(Manager.currentSong.duration)));
         notiBuilder.setWhen(0);
+        Intent resultIntent = new Intent(context, CurrentSong.class);
+        resultIntent.putExtra("START_POSITION", Manager.currentSongList.indexOf(Manager.currentSong));
+        PendingIntent openSong = PendingIntent.getActivity(
+                context,
+                0,
+                resultIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT
+        );
+
+        notiBuilder.setContentIntent(openSong);
         //notiBuilder.addAction(R.drawable.next_button, "Next", nextIntent);
 
+            /*Bundle b = new Bundle();
+            b.putSerializable("Songs", allSongs);
+            intent.putExtras(b);*/
+            /*intent.putExtra("SONG_LOCATION", allSongs.get(position).location);
+            intent.putExtra("SONG_ARTIST", allSongs.get(position).artist);
+            intent.putExtra("SONG_DURATION", allSongs.get(position).duration);
+            intent.putExtra("SONG_TITLE", allSongs.get(position).title);*/
 
         if (state == 0) {
             notiBuilder.addAction(R.drawable.pause_button, "Pause", playIntent);
@@ -135,32 +280,15 @@ public class CurrentSong extends AppCompatActivity {
         }
         //notiBuilder.addAction(R.drawable.back_button, "Previous", backIntent);
         notiBuilder.setOngoing(true);
+
         mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+
         mNotificationManager.notify(0, notiBuilder.build());
     }
+
     public static void removeAllNotifs() {
         mNotificationManager.cancelAll();
     }
-
-/*    public static void createPlayNotification(Context context) {
-        Intent play = new Intent(context, MyReceiver.class);
-        play.setAction("com.jmulla.musicplayer.PLAYBUTTONCLICKED");
-        PendingIntent playIntent = PendingIntent.getBroadcast(context, 1, play, PendingIntent.FLAG_CANCEL_CURRENT);
-        //remoteViews = new RemoteViews(context.getPackageName(),R.layout.notification_layout);
-        //remoteViews.setOnClickPendingIntent(R.id.btn_not_play,playIntent);
-        notiBuilder = new NotificationCompat.Builder(context);
-        //notiBuilder.setContent(remoteViews);
-        notiBuilder.setSmallIcon(R.drawable.refresh_icon);
-        notiBuilder.setContentTitle(songTitle);
-        notiBuilder.setContentText(songArtist);
-        notiBuilder.setContentInfo(songDuration);
-        notiBuilder.setWhen(0);
-        notiBuilder.addAction(R.drawable.play_button, "Play", playIntent);
-        //notiBuilder.addAction(R.drawable.next_button, "Next", playIntent);
-        notiBuilder.setOngoing(true);
-        mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        mNotificationManager.notify(0, notiBuilder.build());
-    }*/
 
     public static void resume() {
         audioService.ResumeAudio();
@@ -176,7 +304,35 @@ public class CurrentSong extends AppCompatActivity {
         tv_artist.setText(Manager.currentSong.artist);
         assert seekBar!= null;
         seekBar.setMax(Integer.parseInt(Manager.currentSong.duration));
+
     }
+
+    public static void makeToast(Context context, Object object) {
+        try {
+            Toast.makeText(context, String.valueOf(object), Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            makeToast(context, e);
+        }
+
+    }
+
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_OK) {
+
+            try {
+                final Uri imageUri = data.getData();
+                final InputStream imageStream = getContentResolver().openInputStream(imageUri);
+                final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+                Bitmap b = Bitmap.createScaledBitmap(selectedImage, imageView.getWidth(), imageView.getHeight(), true);
+                Song song = new Song(songId, songTitle, songArtist, songAlbum, imageUri.toString(), songDuration, songLoc);
+                new DatabaseHandler(getBaseContext()).updateSong(song);
+                imageView.setImageBitmap(b);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+        }
+        }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -187,11 +343,15 @@ public class CurrentSong extends AppCompatActivity {
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if(AudioService.mp != null){
-                    int mCurrentPosition = AudioService.mp.getCurrentPosition();
-                    seekBar.setProgress(mCurrentPosition);
+                try {
+                    if (AudioService.mp != null) {
+                        int mCurrentPosition = AudioService.mp.getCurrentPosition();
+                        seekBar.setProgress(mCurrentPosition);
+                    }
+                    mHandler.postDelayed(this, 1000);
+                } catch (Exception e) {
+                    Log.d("Exception", e.toString());
                 }
-                mHandler.postDelayed(this, 1000);
             }
         });
 
@@ -200,28 +360,43 @@ public class CurrentSong extends AppCompatActivity {
         btn_play = (Button) findViewById(R.id.btn_play_pause);
         btn_back = (Button) findViewById(R.id.btn_back);
         btn_fwd = (Button) findViewById(R.id.btn_fwd);
-        btn_repeat = (Button) findViewById(R.id.btn_current_repeat);
-        btn_shuffle = (Button) findViewById(R.id.btn_current_shuffle);
-        btn_repeat.setOnClickListener(new View.OnClickListener() {
+        imageView = (ImageView) findViewById(R.id.img_cover_art);
+
+        sw_repeat = (Switch) findViewById(R.id.sw_current_repeat);
+        sw_shuffle = (Switch) findViewById(R.id.sw_current_shuffle);
+        imageView.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view) {
-                if (Manager.currentState == Manager.State.REPEAT_ONE){
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_OPEN_DOCUMENT);
+                startActivityForResult(intent, 1);
+            }
+        });
+
+        sw_repeat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if ((Manager.currentState == Manager.State.REPEAT_ONE)){
                     Manager.currentState = Manager.State.NORMAL;
-                }
-                else if(Manager.currentState == Manager.State.NORMAL || Manager.currentState == Manager.State.SHUFFLE){
+                    buttonView.setChecked(false);
+                } else if ((Manager.currentState == Manager.State.NORMAL || Manager.currentState == Manager.State.SHUFFLE)){
                     Manager.currentState = Manager.State.REPEAT_ONE;
+                    buttonView.setChecked(true);
                     makeToast(getApplicationContext(), "REPEATING");
                 }
             }
         });
-        btn_shuffle.setOnClickListener(new View.OnClickListener() {
+        sw_shuffle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onClick(View view) {
-                if (Manager.currentState == Manager.State.SHUFFLE){
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if ((Manager.currentState == Manager.State.SHUFFLE)){
                     Manager.currentState = Manager.State.NORMAL;
-                }
-                else if (Manager.currentState == Manager.State.NORMAL || Manager.currentState == Manager.State.REPEAT_ONE){
+                    buttonView.setChecked(false);
+                } else if ((Manager.currentState == Manager.State.NORMAL || Manager.currentState == Manager.State.REPEAT_ONE)){
                     Manager.currentState = Manager.State.SHUFFLE;
+                    buttonView.setChecked(true);
+                    makeToast(getApplicationContext(), "SHUFFLING");
                 }
             }
         });
@@ -229,12 +404,14 @@ public class CurrentSong extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Back();
+                fillInfo();
             }
         });
         btn_fwd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 Forward();
+                fillInfo();
             }
         });
         Intent intent = getIntent();
@@ -244,12 +421,25 @@ public class CurrentSong extends AppCompatActivity {
         songDuration = intent.getStringExtra("SONG_DURATION");
         songTitle = intent.getStringExtra("SONG_TITLE");*/
         Song CS = Manager.currentSong;
-        songId = CS.id;
-        songLoc = CS.location;
-        songArtist = CS.artist;
-        songDuration = CS.duration;
-        songTitle = CS.title;
+        songId = CS.getId();
+        songLoc = CS.getLocation();
+        songArtist = CS.getArtist();
+        songAlbum = CS.getAlbum();
+        song_cover_loc = CS.getCover_loc();
+        songDuration = CS.getDuration();
+        songTitle = CS.getTitle();
+
         startPos = intent.getIntExtra("START_POSITION", 0);
+        try {
+
+            final InputStream imageStream = getContentResolver().openInputStream(Uri.parse(song_cover_loc));
+            final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+            Bitmap b = Bitmap.createScaledBitmap(selectedImage, 150, 150, true);
+            imageView.setImageBitmap(b);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+
         //allSongs = (ArrayList<Song>) intent.getExtras().getSerializable("Songs");
         fillInfo();
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -283,7 +473,6 @@ public class CurrentSong extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 changeState(getBaseContext());
-
             }
         });
 
@@ -298,16 +487,9 @@ public class CurrentSong extends AppCompatActivity {
     private void Back() {
         audioService.PreviousSong();
     }
+
     private void Forward(){
         audioService.NextSong();
-    }
-    public static void makeToast(Context context, Object object) {
-        try {
-            Toast.makeText(context, String.valueOf(object), Toast.LENGTH_SHORT).show();
-        } catch (Exception e) {
-            makeToast(context, e);
-        }
-
     }
 
     @Override
