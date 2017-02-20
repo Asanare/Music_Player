@@ -1,8 +1,10 @@
 package com.jmulla.musicplayer;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
@@ -16,23 +18,24 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
 /**
  * Created by Jamal on 13/07/2016.
  */
-public class PlaylistsTab extends Fragment{
-    PlaylistsTabAdapter adapter;
+public class PlaylistsTab extends Fragment implements FragmentLifecycle {
+    static PlaylistsTabAdapter adapter;
     ListView lv;
-    Button btn_newPlaylist;
+    ImageButton btn_newPlaylist;
     Manager manager = new Manager();
     ActionMode mActionMode;
-    ArrayList<PlaylistModel> playlistModels = new ArrayList<>();
+
 
     public static PlaylistsTab newInstance() {
         return new PlaylistsTab();
@@ -45,6 +48,19 @@ public class PlaylistsTab extends Fragment{
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        Toast.makeText(getContext(), "Resumed", Toast.LENGTH_SHORT).show();
+        new ReloadPlaylists(getContext()).execute();
+    }
+
+    @Override
+    public void onResumeFragment() {
+        new ReloadPlaylists(getContext()).execute();
+    }
+
+
     void createFragment() {
         FragmentTransaction transaction = getFragmentManager().beginTransaction();
         Fragment newFragment = new PlaylistsTab();
@@ -52,21 +68,19 @@ public class PlaylistsTab extends Fragment{
         transaction.commit();
     }
 
-    void reload() {
+    public void reload() {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.detach(PlaylistsTab.this).attach(PlaylistsTab.this).commit();
     }
 
     void init(View view) {
-
         lv = (ListView) view.findViewById(R.id.lv_playlists);
-        btn_newPlaylist = (Button) view.findViewById(R.id.btn_new_playlist);
-        playlistModels = manager.getPlaylists(getContext());
+        btn_newPlaylist = (ImageButton) view.findViewById(R.id.btn_new_playlist);
         TextView tvPlaylists = (TextView) view.findViewById(R.id.tv_no_playlists);
-        adapter = new PlaylistsTabAdapter(getContext(), playlistModels);
+        adapter = new PlaylistsTabAdapter(getContext(), manager.getPlaylists(getContext()));
         CurrentSong.makeToast(getContext(), "LIKE NEW");
 
-        if (playlistModels.size() == 0) {
+        if (adapter.getCount() == 0) {
             lv.setVisibility(View.INVISIBLE);
             tvPlaylists.setVisibility(View.VISIBLE);
         } else {
@@ -105,6 +119,7 @@ public class PlaylistsTab extends Fragment{
         });
     }
 
+
     class PlaylistsTabAdapter extends BaseAdapter {
         private ArrayList<PlaylistModel> mPlaylistModels;
         private Context mContext;
@@ -116,6 +131,11 @@ public class PlaylistsTab extends Fragment{
             mContext = context;
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
+        }
+
+        public void swapItems(ArrayList<PlaylistModel> playlistModels) {
+            this.mPlaylistModels = playlistModels;
+            notifyDataSetChanged();
         }
 
         @Override
@@ -166,7 +186,7 @@ public class PlaylistsTab extends Fragment{
                     switch (item.getItemId()) {
                         case R.id.playlist_delete:
                             DatabaseHandler db = new DatabaseHandler(getContext());
-                            db.deletePlaylist(playlistModels.get(position));
+                            db.deletePlaylist(mPlaylistModels.get(position));
                             mode.finish();
                             reload();// Action picked, so close the CAB
                             return true;
@@ -197,8 +217,8 @@ public class PlaylistsTab extends Fragment{
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(getContext(), GenericSongList.class);
-                    intent.putExtra("com.jmulla.musicplayer.SONGS", playlistModels.get(position).getSongs());
-                    intent.putExtra("NAME", playlistModels.get(position).getName());
+                    intent.putExtra("com.jmulla.musicplayer.SONGS", mPlaylistModels.get(position).getSongs());
+                    intent.putExtra("NAME", mPlaylistModels.get(position).getName());
                     startActivity(intent);
                     //Toast.makeText(mContext, "You Clicked "+mPlaylistModels.get(position).getName(), Toast.LENGTH_LONG).show();
                 }
@@ -227,5 +247,44 @@ public class PlaylistsTab extends Fragment{
             TextView p_tracks;
         }
 
+    }
+
+    public class ReloadPlaylists extends AsyncTask<Void, Integer, ArrayList<PlaylistModel>> {
+        ProgressDialog pd_ring;
+        View mView;
+        ArrayList<PlaylistModel> playlistModels;
+        Context mContext;
+
+        ReloadPlaylists(View view) {
+            this.mView = view;
+        }
+
+        ReloadPlaylists(Context context) {
+            mContext = context;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            pd_ring = new ProgressDialog(mContext);
+            pd_ring.setMessage("Loading...");
+            pd_ring.show();
+        }
+
+        @Override
+        protected ArrayList<PlaylistModel> doInBackground(Void... params) {
+            playlistModels = manager.getPlaylists(mContext);
+            return playlistModels;
+        }
+
+        protected void onPostExecute(ArrayList<PlaylistModel> result) {
+            adapter.swapItems(result);
+            if (pd_ring != null) {
+                pd_ring.dismiss();
+            }
+            //initialiseLayouts(mView);
+            //setupListRecyclerView();
+            //tv_count.setText(String.format("%s songs", Integer.toString(result.size())));
+
+        }
     }
 }

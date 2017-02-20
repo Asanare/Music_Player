@@ -38,6 +38,7 @@ public class Blacklisted extends AppCompatActivity {
         DatabaseHandler dbh = new DatabaseHandler(getApplicationContext());
         list = dbh.getAllSongs(DatabaseHandler.TABLE_BLACKLIST, true);
         adapter = new BlacklistAdapter(getBaseContext(), this.list);
+        CurrentSong.makeToast(getBaseContext(), list.size());
         listView.setAdapter(adapter);
 
     }

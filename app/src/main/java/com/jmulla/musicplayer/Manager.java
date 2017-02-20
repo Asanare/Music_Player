@@ -38,7 +38,75 @@ public class Manager {
         return UUID.randomUUID().toString();
     }
 
-    public ArrayList<ArtistModel> getAllArtistData(Context context) {
+    ArrayList<AlbumModel> getAllAlbumData(Context context) {
+        ArrayList<AlbumModel> allAlbumData = new ArrayList<>();
+        LinkedHashSet<ArrayList> allAlbums = new LinkedHashSet<>();
+        Cursor cursor;
+        String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
+        String[] projection = {
+                MediaStore.Audio.Media.DATA
+        };
+        cursor = context.getContentResolver().query(
+                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                null,
+                null);
+        AudioFile f = null;
+        if (cursor != null) {
+            while (cursor.moveToNext()) {
+                File file = new File(cursor.getString(0));
+                try {
+                    f = AudioFileIO.read(file);
+                } catch (CannotReadException | IOException | TagException | ReadOnlyFileException | InvalidAudioFrameException e) {
+                    e.printStackTrace();
+                }
+
+                if (f != null) {
+
+                    String album = f.getTag().getFirst(FieldKey.ALBUM);
+                    String artist = f.getTag().getFirst(FieldKey.ARTIST);
+                    ArrayList<String> albumData = new ArrayList<>();
+                    if (album.equals("")) {
+                        albumData.add(0, "Unknown");
+                    } else {
+                        albumData.add(0, album);
+                    }
+                    if (artist.equals("")) {
+                        albumData.add(1, "Unknown");
+                    } else {
+                        albumData.add(1, artist);
+                    }
+                    allAlbums.add(albumData);
+
+                }
+            }
+        }
+
+        if (cursor != null) {
+            cursor.close();
+        }
+
+        for (ArrayList albumData : allAlbums) {
+            allAlbumData.add(new AlbumModel(albumData.get(0).toString(), albumData.get(1).toString()));
+        }
+        for (AlbumModel albumModel : allAlbumData) {
+            try {
+                for (Song s : this.getAllMusicData(context)) {
+                    if (albumModel.getAlbum().equals(s.album)) {
+                        albumModel.addSong(s);
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        return allAlbumData;
+    }
+
+    ArrayList<ArtistModel> getAllArtistData(Context context) {
         ArrayList<ArtistModel> allArtistData = new ArrayList<>();
         LinkedHashSet<String> allArtists = new LinkedHashSet<>();
         Cursor cursor;

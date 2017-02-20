@@ -18,7 +18,7 @@ import java.util.ArrayList;
  */
 
 public class AlbumTab extends Fragment {
-    ArtistsTabAdapter adapter;
+    AlbumTabAdapter adapter;
     ListView lv;
     Manager manager = new Manager();
 
@@ -28,27 +28,27 @@ public class AlbumTab extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.artists_tab, container, false);
+        final View view = inflater.inflate(R.layout.album_tab, container, false);
         init(view);
         return view;
     }
 
     void init(View view) {
-        lv = (ListView) view.findViewById(R.id.lv_artists);
-        ArrayList<ArtistModel> artists = manager.getAllArtistData(getContext());
-        adapter = new ArtistsTabAdapter(getContext(), artists);
+        lv = (ListView) view.findViewById(R.id.lv_albums);
+        ArrayList<AlbumModel> albums = manager.getAllAlbumData(getContext());
+        adapter = new AlbumTabAdapter(getContext(), albums);
         lv.setAdapter(adapter);
 
     }
 
-    class ArtistsTabAdapter extends BaseAdapter {
-        private ArrayList<ArtistModel> mArtists;
+    class AlbumTabAdapter extends BaseAdapter {
+        private ArrayList<AlbumModel> mAlbums;
         private Context mContext;
         private LayoutInflater inflater = null;
 
-        ArtistsTabAdapter(Context context, ArrayList<ArtistModel> artists) {
+        AlbumTabAdapter(Context context, ArrayList<AlbumModel> albums) {
             // TODO Auto-generated constructor stub
-            mArtists = artists;
+            mAlbums = albums;
             mContext = context;
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
@@ -56,7 +56,7 @@ public class AlbumTab extends Fragment {
         @Override
         public int getCount() {
             // TODO Auto-generated method stub
-            return mArtists.size();
+            return mAlbums.size();
         }
 
         @Override
@@ -77,23 +77,23 @@ public class AlbumTab extends Fragment {
             Holder holder;
             View rowView = convertView;
             if (rowView == null) {
-                rowView = inflater.inflate(R.layout.artists_list, parent, false);
+                rowView = inflater.inflate(R.layout.album_list, parent, false);
                 holder = new Holder();
                 rowView.setTag(holder);
             } else {
                 holder = (Holder) rowView.getTag();
             }
 
-            holder.artistName = (TextView) rowView.findViewById(R.id.artist_name);
-            holder.artistName.setText(mArtists.get(position).getArtist());
-            holder.tracks = (TextView) rowView.findViewById(R.id.artist_tracks);
-            holder.tracks.setText(String.format("Songs: %s", String.valueOf(mArtists.get(position).getNumberOfTracks())));
+            holder.albumName = (TextView) rowView.findViewById(R.id.album_name);
+            holder.albumName.setText(mAlbums.get(position).getAlbum());
+            holder.artistName = (TextView) rowView.findViewById(R.id.album_artist);
+            holder.artistName.setText(mAlbums.get(position).getArtist());
             rowView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(getContext(), GenericSongList.class);
-                    intent.putExtra("com.jmulla.musicplayer.SONGS", mArtists.get(position).getSongs());
-                    intent.putExtra("NAME", mArtists.get(position).getArtist());
+                    intent.putExtra("com.jmulla.musicplayer.SONGS", mAlbums.get(position).getSongs());
+                    intent.putExtra("NAME", mAlbums.get(position).getAlbum());
                     startActivity(intent);
                 }
             });
@@ -108,8 +108,8 @@ public class AlbumTab extends Fragment {
         }
 
         private class Holder {
+            TextView albumName;
             TextView artistName;
-            TextView tracks;
         }
 
     }

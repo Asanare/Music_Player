@@ -18,6 +18,7 @@ public class SearchAdapter extends BaseAdapter {
     private static final int TYPE_DIVIDER = 0;
     private static final int TYPE_SONG = 1;
     private static final int TYPE_ARTIST = 2;
+    private static final int TYPE_ALBUM = 3;
     private ArrayList<Object> resultsArray;
     private LayoutInflater inflater;
 
@@ -43,7 +44,7 @@ public class SearchAdapter extends BaseAdapter {
 
     @Override
     public int getViewTypeCount() {
-        return 3;
+        return 4;
     }
 
     @Override
@@ -52,6 +53,8 @@ public class SearchAdapter extends BaseAdapter {
             return TYPE_SONG;
         } else if (getItem(position) instanceof ArtistModel) {
             return TYPE_ARTIST;
+        } else if (getItem(position) instanceof AlbumModel) {
+            return TYPE_ALBUM;
         }
 
         return TYPE_DIVIDER;
@@ -84,12 +87,35 @@ public class SearchAdapter extends BaseAdapter {
                     break;
                 case TYPE_ARTIST:
                     convertView = inflater.inflate(R.layout.artists_list, parent, false);
+                    convertView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(v.getContext(), GenericSongList.class);
+                            intent.putExtra("com.jmulla.musicplayer.SONGS", ((ArtistModel) getItem(position)).getSongs());
+                            intent.putExtra("NAME", ((ArtistModel) getItem(position)).getArtist());
+                            v.getContext().startActivity(intent);
+                        }
+                    });
+                    break;
+                case TYPE_ALBUM:
+                    convertView = inflater.inflate(R.layout.album_list, parent, false);
+                    convertView.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(v.getContext(), GenericSongList.class);
+                            intent.putExtra("com.jmulla.musicplayer.SONGS", ((AlbumModel) getItem(position)).getSongs());
+                            intent.putExtra("NAME", ((AlbumModel) getItem(position)).getAlbum());
+                            v.getContext().startActivity(intent);
+                        }
+                    });
                     break;
                 case TYPE_DIVIDER:
                     convertView = inflater.inflate(R.layout.search_row_header, parent, false);
                     break;
 
             }
+        } else {
+
         }
 
         switch (type) {
@@ -103,11 +129,18 @@ public class SearchAdapter extends BaseAdapter {
                 duration.setText(s.duration);
                 break;
             case TYPE_ARTIST:
-                ArtistModel a = (ArtistModel) getItem(position);
-                TextView a_name = (TextView) convertView.findViewById(R.id.artist_name);
-                TextView a_tracks = (TextView) convertView.findViewById(R.id.artist_tracks);
-                a_name.setText(a.getArtist());
-                a_tracks.setText(String.valueOf(a.getNumberOfTracks()));
+                ArtistModel artistModel = (ArtistModel) getItem(position);
+                TextView artistName = (TextView) convertView.findViewById(R.id.artist_name);
+                TextView artistTracks = (TextView) convertView.findViewById(R.id.artist_tracks);
+                artistName.setText(artistModel.getArtist());
+                artistTracks.setText(String.valueOf(artistModel.getNumberOfTracks()));
+                break;
+            case TYPE_ALBUM:
+                AlbumModel albumModel = (AlbumModel) getItem(position);
+                TextView albumName = (TextView) convertView.findViewById(R.id.album_name);
+                TextView albumArtist = (TextView) convertView.findViewById(R.id.album_artist);
+                albumName.setText(albumModel.getAlbum());
+                albumArtist.setText(albumModel.getArtist());
                 break;
             case TYPE_DIVIDER:
                 TextView headerTitle = (TextView) convertView.findViewById(R.id.headerTitle);
@@ -117,5 +150,22 @@ public class SearchAdapter extends BaseAdapter {
         }
 
         return convertView;
+    }
+
+    class SongViewHolder {
+        TextView title;
+        TextView artist;
+        TextView duration;
+
+    }
+
+    class ArtistViewHolder {
+        TextView artistName;
+        TextView artistTracks;
+    }
+
+    class AlbumViewHolder {
+        TextView albumName;
+        TextView albumArtist;
     }
 }

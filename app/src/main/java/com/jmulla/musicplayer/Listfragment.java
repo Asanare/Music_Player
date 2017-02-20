@@ -34,6 +34,7 @@ import java.util.Comparator;
 public class Listfragment extends Fragment {
     static ListView lv_search;
     static SongsListAdapter listAdapter;
+
     private static ArrayList<Pair<Long, Song>> mItemArray = new ArrayList<>();
     private static MySwipeRefreshLayout mRefreshLayout;
     Manager manager = new Manager();
@@ -235,6 +236,14 @@ public class Listfragment extends Fragment {
         mDragListView = (DragListView) view.findViewById(R.id.drag_list_view);
         mDragListView.getRecyclerView().setVerticalScrollBarEnabled(true);
         lv_search = (ListView) view.findViewById(R.id.lv_search);
+        mDragListView.getRecyclerView().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                CurrentSong.makeToast(v.getContext(), "LONOOOOOOOOOOOOOOOOOOOOOOO");
+                v.setSelected(true);
+            }
+        });
+
         mDragListView.setDragListListener(new DragListView.DragListListenerAdapter() {
             @Override
             public void onItemDragStarted(int position) {
@@ -257,7 +266,6 @@ public class Listfragment extends Fragment {
 
 
         mRefreshLayout.setScrollingView(mDragListView.getRecyclerView());
-        mRefreshLayout.setColorSchemeColors(ContextCompat.getColor(getContext(), R.color.colorAccent));
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
@@ -281,7 +289,7 @@ public class Listfragment extends Fragment {
 
     private void setupListRecyclerView() {
         mDragListView.setLayoutManager(new LinearLayoutManager(getContext()));
-        listAdapter = new SongsListAdapter(mItemArray, R.layout.songs_list_item, R.id.image, false);
+        listAdapter = new SongsListAdapter(mItemArray, R.layout.songs_list_item, R.id.image, false, getContext());
         mDragListView.setAdapter(listAdapter, false);
         mDragListView.setCanDragHorizontally(false);
         mDragListView.setCustomDragItem(new MyDragItem(getContext(), R.layout.songs_list_item));
@@ -322,7 +330,6 @@ public class Listfragment extends Fragment {
             ((TextView) (dragView.findViewById(R.id.tv_duration))).setText(((TextView) clickedView.findViewById(R.id.tv_duration)).getText());
             //CharSequence text = ((TextView) clickedView.findViewById(R.id.text)).getText();
             //((TextView) dragView.findViewById(R.id.text)).setText(text);
-            dragView.setBackgroundColor(ContextCompat.getColor(clickedView.getContext(), R.color.colorAccent));
         }
     }
 

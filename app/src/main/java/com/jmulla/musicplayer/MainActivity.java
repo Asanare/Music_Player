@@ -25,11 +25,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
-
     //Manager manager;
     static final int MY_PERMISSIONS_REQUEST_WRITE_STORAGE = 0;
+    MenuItem sortSpinner;
     Button search;
-
+    Spinner spinner;
     private void showMessageOKCancel(String message, DialogInterface.OnClickListener okListener) {
         new AlertDialog.Builder(MainActivity.this)
                 .setMessage(message)
@@ -49,8 +49,11 @@ public class MainActivity extends AppCompatActivity {
 /*        ActionBar actionBar = getActionBar();
         assert actionBar != null;
         actionBar.setDisplayShowTitleEnabled(false);*/
-
-
+/*        Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+        window.setStatusBarColor(ContextCompat.getColor(getBaseContext(), R.color.blue_900));
+        window.setNavigationBarColor(ContextCompat.getColor(getBaseContext(), R.color.blue_900));*/
         int hasStoragePermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (hasStoragePermission != PackageManager.PERMISSION_GRANTED) {
             if (!shouldShowRequestPermissionRationale(Manifest.permission.WRITE_CONTACTS)) {
@@ -113,7 +116,17 @@ public class MainActivity extends AppCompatActivity {
             public void onTabSelected(TabLayout.Tab tab) {
                 viewPager.setCurrentItem(tab.getPosition());
 
-   /*             if(tab.getPosition() == 2){
+                if (tab.getPosition() == 3) {
+                    try {
+                        adapter.playlistsTab.onResumeFragment();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                }
+
+
+/*                if(tab.getPosition() == 3){
                     adapter.notifyDataSetChanged();
                 }*/
 
@@ -151,12 +164,15 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public boolean onCreateOptionsMenu(final Menu menu) {
+
         MenuInflater inflater = getMenuInflater();
         inflater.inflate(R.menu.menu, menu);
         MenuItem searchItem = menu.findItem(R.id.searchButton);
-
+        sortSpinner = menu.findItem(R.id.sort_spinner);
         SearchView searchView = (SearchView) searchItem.getActionView();
-        final Spinner spinner = (Spinner) menu.findItem(R.id.sort_spinner).getActionView();
+        spinner = (Spinner) sortSpinner.getActionView();
+
+
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> spinnerAdapter = ArrayAdapter.createFromResource(this,
                 R.array.sort_choices, android.R.layout.simple_spinner_item);
@@ -208,6 +224,7 @@ public class MainActivity extends AppCompatActivity {
             public boolean onMenuItemActionExpand(MenuItem item) {
                 Listfragment.makeQueueInvisible();
                 Listfragment.makeSearchVisible();
+                sortSpinner.setVisible(false);
                 //Listfragment.changeLayout();
                 return true;
             }
@@ -217,10 +234,12 @@ public class MainActivity extends AppCompatActivity {
                 // Write your code here
                 Listfragment.makeSearchInvisible();
                 Listfragment.makeQueueVisible();
+                sortSpinner.setVisible(true);
                 //Listfragment.changeLayout();
                 return true;
             }
         });
+
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -249,6 +268,8 @@ public class MainActivity extends AppCompatActivity {
                 Intent intent2 = new Intent(this, Blacklisted.class);
                 startActivity(intent2);
                 return true;
+            case R.id.searchButton:
+
             default:
                 // If we got here, the user's action was not recognized.
                 // Invoke the superclass to handle it.

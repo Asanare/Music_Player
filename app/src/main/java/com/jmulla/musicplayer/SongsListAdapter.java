@@ -3,7 +3,7 @@ package com.jmulla.musicplayer;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.support.v4.content.ContextCompat;
+import android.os.AsyncTask;
 import android.support.v4.util.Pair;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -14,6 +14,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.Filter;
 import android.widget.Filterable;
 import android.widget.TextView;
@@ -28,37 +29,47 @@ import java.util.ArrayList;
  */
 public class SongsListAdapter extends DragItemAdapter<Pair<Long, Song>, SongsListAdapter.ViewHolder> implements Filterable {
 
-    public ArrayList<String> selectedIds = new ArrayList<>();
+    public ArrayList<Integer> selectedIds = new ArrayList<>();
     ArrayList<Song> allSongs = new ArrayList<>();
     View view;
-    Context context;
+    ArrayList<ArtistModel> allArtists;
+    ArrayList<AlbumModel> allAlbums;
+    Context mContext;
     private int mLayoutId;
     private int mGrabHandleId;
     private String selectedId = "";
-    public SongsListAdapter(ArrayList<Pair<Long, Song>> list, int layoutId, int grabHandleId, boolean dragOnLongPress) {
+
+    public SongsListAdapter(ArrayList<Pair<Long, Song>> list, int layoutId, int grabHandleId, boolean dragOnLongPress, final Context context) {
         super(dragOnLongPress);
 
         mLayoutId = layoutId;
         mGrabHandleId = grabHandleId;
         setHasStableIds(true);
         setItemList(list);
-
+        AsyncTask.execute(new Runnable() {
+            @Override
+            public void run() {
+                allArtists = new Manager().getAllArtistData(context.getApplicationContext());
+                allAlbums = new Manager().getAllAlbumData(context.getApplicationContext());
+            }
+        });
 
     }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         view = LayoutInflater.from(parent.getContext()).inflate(mLayoutId, parent, false);
-        context = parent.getContext();
+        mContext = parent.getContext();
+
         return new ViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         super.onBindViewHolder(holder, position);
-        if (selectedId.equals(mItemList.get(position).first.toString())) {
+/*        if (holder.itemView.getTag(getItemId(position))) {
             holder.itemView.setBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.app_color));
-        }
+        }*/
         ///holder.setIsRecyclable(true);
         holder.mTitle.setText(mItemList.get(position).second.title);
         holder.mArtist.setText(mItemList.get(position).second.artist);
@@ -80,9 +91,11 @@ public class SongsListAdapter extends DragItemAdapter<Pair<Long, Song>, SongsLis
             protected FilterResults performFiltering(CharSequence constraint) {
                 final FilterResults oReturn = new FilterResults();
                 final ArrayList<Pair<String, ArrayList<Object>>> results = new ArrayList<>();
-                ArrayList<String> artists = new ArrayList<>();
+                ArrayList<ArtistModel> artists = new ArrayList<>();
+                ArrayList<AlbumModel> albums = new ArrayList<>();
                 results.add(new Pair<>("Title", new ArrayList<>()));
                 results.add(new Pair<>("Artist", new ArrayList<>()));
+                results.add(new Pair<>("Albums", new ArrayList<>()));
                 final ArrayList<Song> original = new ArrayList<>();
                 for (Pair<Long, Song> song : mItemList) {
                     original.add(song.second);
@@ -92,19 +105,42 @@ public class SongsListAdapter extends DragItemAdapter<Pair<Long, Song>, SongsLis
                         for (final Song s : original) {
                             if (s.title.toUpperCase().contains(constraint.toString().toUpperCase())) {
                                 results.get(0).second.add(s);//Add to title section if title matches constraint
-                            } else if (s.artist.toUpperCase().contains(constraint.toString().toUpperCase())) {
-                                if (artists.contains(s.artist)) {
-
-                                } else {
+                            } /*else if (s.artist.toUpperCase().contains(constraint.toString().toUpperCase())) {
+                                if (!artists.contains(s.artist)) {
                                     artists.add(s.artist);
+                                    //Add to artist section if artist matches constraint
                                 }
-                                //Add to artist section if artist matches constraint
+                            }
+                            else if(s.album.toUpperCase().contains(constraint.toString().toUpperCase())){
+                                if (!albums.contains(new Pair<>(s.album, s.artist))) {
+                                    albums.add(new Pair<>(s.album, s.artist));
+                                }
+                            }*/
+                        }
+                        for (ArtistModel artistModel : allArtists) {
+                            if (artistModel.getArtist().toUpperCase().contains(constraint.toString().toUpperCase())) {
+                                if (!artists.contains(artistModel)) {
+                                    artists.add(artistModel);
+                                }
+                            }
+                        }
+                        for (AlbumModel albumModel : allAlbums) {
+                            if (albumModel.getAlbum().toUpperCase().contains(constraint.toString().toUpperCase())) {
+                                if (!albums.contains(albumModel)) {
+                                    albums.add(albumModel);
+                                }
                             }
                         }
                     }
-                    for (String a : artists) {
-                        results.get(1).second.add(new ArtistModel(a));
+                    results.get(1).second.addAll(artists);
+                    results.get(2).second.addAll(albums);
+/*
+                    for (String artist : artists) {
+                        results.get(1).second.add(new ArtistModel(artist));
                     }
+                    for (Pair<String, String> data : albums) {
+                        results.get(2).second.add(new AlbumModel(data.first, data.second));
+                    }*/
                     oReturn.values = results;
                 }
                 return oReturn;
@@ -113,13 +149,13 @@ public class SongsListAdapter extends DragItemAdapter<Pair<Long, Song>, SongsLis
             @SuppressWarnings("unchecked")
             @Override
             protected void publishResults(CharSequence constraint, FilterResults results) {
-                Listfragment.initSearchResults((ArrayList<Pair<String, ArrayList<Object>>>) results.values, view, context);
+                Listfragment.initSearchResults((ArrayList<Pair<String, ArrayList<Object>>>) results.values, view, mContext);
             }
         };
     }
 
     private void createDialog(String title, String message, String positive, String negative, boolean cancelable, final Runnable func) {
-        AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+        AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
         dialog.setCancelable(cancelable);
         dialog.setTitle(title);
         dialog.setMessage(message);
@@ -149,22 +185,28 @@ public class SongsListAdapter extends DragItemAdapter<Pair<Long, Song>, SongsLis
         TextView mDuration;
         ActionMode mActionMode;
 
+
         ViewHolder(final View itemView) {
             super(itemView, mGrabHandleId);
             mTitle = (TextView) itemView.findViewById(R.id.tv_title);
             mArtist = (TextView) itemView.findViewById(R.id.tv_artist);
             mDuration = (TextView) itemView.findViewById(R.id.tv_duration);
-            itemView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorPrimaryDark));
+            //itemView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.app_color));
             //Log.d("ID", Integer.toString(mArtist.getId()));
+/*try{
+
+    if(itemView.getTag(itemView.getId()).toString().equals("S")){
+        itemView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.app_color));
+    }else{
+        itemView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorPrimaryDark));
+    }
+}catch (Exception e){
+    e.printStackTrace();
+}finally {
+    itemView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorPrimaryDark));
+}*/
 
 
-            /*if (selectedIds.contains(itemView.getId())){
-                itemView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.app_color));
-            }
-            else {
-
-                itemView.setBackgroundColor(ContextCompat.getColor(itemView.getContext(), R.color.colorPrimaryDark));
-            }*/
 
             mActionModeCallback = new ActionMode.Callback() {
 
@@ -188,11 +230,32 @@ public class SongsListAdapter extends DragItemAdapter<Pair<Long, Song>, SongsLis
                 @Override
                 public boolean onActionItemClicked(final ActionMode mode, MenuItem item) {
                     switch (item.getItemId()) {
+                        case R.id.song_rename:
+                            AlertDialog.Builder alert = new AlertDialog.Builder(mContext);
+                            final EditText edittext = new EditText(mContext);
+                            alert.setMessage("Rename song locally");
+                            alert.setTitle("Rename");
+                            alert.setView(edittext);
+                            alert.setPositiveButton("Confirm", new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int whichButton) {
+                                    String renamedValue = edittext.getText().toString();
+                                    Song song = mItemList.get(getLayoutPosition()).second;
+                                    song.title = renamedValue;
+                                    new DatabaseHandler(mContext).updateSong(song);
+                                    mItemList.remove(getLayoutPosition());
+                                    mItemList.add(getLayoutPosition(), new Pair<>((long) getLayoutPosition(), song));
+                                    Listfragment.listAdapter.notifyDataSetChanged();
+                                    Listfragment.sortAlphabetical();
+                                    mode.finish();
+                                }
+                            });
+                            alert.show();
+                            return true;
                         case R.id.song_edit_tags:
-                            Intent intent = new Intent(context, TagEditor.class);
+                            Intent intent = new Intent(mContext, TagEditor.class);
                             intent.putExtra("com.jmulla.musicplayer.TagEditor.SONG", mItemList.get(getLayoutPosition()).second);
                             intent.putExtra("com.jmulla.musicplayer.TagEditor.POSITION", getLayoutPosition());
-                            context.startActivity(intent);
+                            mContext.startActivity(intent);
                             mode.finish();
                             return true;
                         case R.id.song_top_queue:
@@ -207,21 +270,21 @@ public class SongsListAdapter extends DragItemAdapter<Pair<Long, Song>, SongsLis
                             Runnable blacklistRunnable = new Runnable() {
                                 @Override
                                 public void run() {
-                                    DatabaseHandler dbh = new DatabaseHandler(context);
+                                    DatabaseHandler dbh = new DatabaseHandler(mContext);
                                     dbh.addSong(mItemList.get(getLayoutPosition()).second, DatabaseHandler.TABLE_BLACKLIST);
                                     dbh.deleteSong(mItemList.get(getLayoutPosition()).second, DatabaseHandler.TABLE_SONGS);
                                     mItemList.remove(getLayoutPosition());
                                     Listfragment.listAdapter.notifyDataSetChanged();
+                                    mode.finish();
                                 }
                             };
                             createDialog("Blacklist", "Do you want to blacklist this song?", "Yes", "Cancel", false, blacklistRunnable);
-                            mode.finish();
                             return true;
                         case R.id.song_delete:
                             Runnable deleteRunnable = new Runnable() {
                                 @Override
                                 public void run() {
-                                    DatabaseHandler db = new DatabaseHandler(context);
+                                    DatabaseHandler db = new DatabaseHandler(mContext);
                                     db.deleteSong(mItemList.get(getLayoutPosition()).second, DatabaseHandler.TABLE_SONGS);
                                     mItemList.remove(getLayoutPosition());
                                     Listfragment.listAdapter.notifyDataSetChanged();
@@ -230,36 +293,38 @@ public class SongsListAdapter extends DragItemAdapter<Pair<Long, Song>, SongsLis
                             createDialog("Delete", "Do you want to delete this song permanently?", "Delete", "Cancel", false, deleteRunnable);
                             return true;
                         case R.id.song_add_to_playlist:
-                            final DatabaseHandler handler = new DatabaseHandler(context);
+                            final DatabaseHandler handler = new DatabaseHandler(mContext);
                             final ArrayList<PlaylistModel> allPlaylists = handler.getAllPlaylists();
                             CharSequence[] names;
                             if (allPlaylists.size() == 0) {
-                                names = new CharSequence[1];
-                                names[0] = "No playlists yet. Go make one";
+                                Toast.makeText(mContext, "No playlists yet. Go make one", Toast.LENGTH_SHORT).show();
                             } else {
                                 names = new CharSequence[allPlaylists.size()];
                                 for (int i = 0; i < allPlaylists.size(); i++) {
                                     names[i] = allPlaylists.get(i).getName();
                                 }
+
+                                new AlertDialog.Builder(mContext)
+                                        .setSingleChoiceItems(names, 0, null)
+                                        .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int whichButton) {
+                                                dialog.dismiss();
+                                                int selectedPosition = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
+                                                handler.addSongToPlaylist(allPlaylists.get(selectedPosition), mItemList.get(getLayoutPosition()).second);
+/*                                            PlaylistsTab.playlistModels = new Manager().getPlaylists(context);
+                                            PlaylistsTab.adapter.notifyDataSetChanged();*/
+
+                                            }
+                                        })
+                                        .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+
+                                            }
+                                        }).show();
                             }
-                            new AlertDialog.Builder(context)
-                                    .setSingleChoiceItems(names, 0, null)
-                                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int whichButton) {
-                                            dialog.dismiss();
-                                            int selectedPosition = ((AlertDialog) dialog).getListView().getCheckedItemPosition();
-                                            handler.addSongToPlaylist(allPlaylists.get(selectedPosition), mItemList.get(getLayoutPosition()).second);
-                                            // Do something useful withe the position of the selected radio button
-                                        }
-                                    })
-                                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-
-                                        }
-                                    }).show();
                             mode.finish();
-
+                            return true;
                         default:
                             return false;
 
@@ -314,18 +379,23 @@ public class SongsListAdapter extends DragItemAdapter<Pair<Long, Song>, SongsLis
             // Start the CAB using the ActionMode.Callback defined above
             //mActionMode = getActivity().startActionMode(mActionModeCallback);
             ActionBar actionBar = ((MainActivity) view.getContext()).getSupportActionBar();
-            actionBar.startActionMode(mActionModeCallback);
+            if (actionBar != null) {
+                actionBar.startActionMode(mActionModeCallback);
+            }
             //mActionMode = ((MainActivity) view.getContext()).startActionMode(mActionModeCallback);
+
             view.setSelected(true);
-            CurrentSong.makeToast(context, mItemList.get(getLayoutPosition()).second.getLocation());
-            return true;
-/*            if (selectedIds.contains(mItemList.get(pos).second.id)) {
-                selectedIds.remove(mItemList.get(pos).second.id);
-                view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.colorPrimaryDark));
-            } else {
-                selectedIds.add((mItemList.get(pos).second.id));
+
+/*            selectedIds.add(view.getId());
+            if(selectedIds.contains(pos)){
                 view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.app_color));
+            }
+            else {
+                view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.colorPrimaryDark));
             }*/
+/*            CurrentSong.makeToast(context, mItemList.get(getLayoutPosition()).second.getLocation());*/
+            return true;
+
 
 /*            if (selectedId.equals(mItemList.get(pos).first.toString())) {
                 selectedId = "";
@@ -343,42 +413,15 @@ public class SongsListAdapter extends DragItemAdapter<Pair<Long, Song>, SongsLis
             else {
                 selectedIds.add(pos);
                 //view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.colorPrimaryDark));
-            }
-            if(selectedIds.contains(pos)){
-                view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.app_color));
-            }
-            else {
-                view.setBackgroundColor(ContextCompat.getColor(view.getContext(), R.color.colorPrimaryDark));
             }*/
-            //Toast.makeText(view.getContext(), "Item long clicked", Toast.LENGTH_SHORT).show();
-            //return true;
+
+
         }
 
 
     }
 
 
-    /*@Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-
-        Song song = getItem(position);
-        if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.songs_list_item, parent, false);
-        }
-
-        TextView tvTitle = (TextView) convertView.findViewById(R.id.tv_title);
-        TextView tvArtist = (TextView) convertView.findViewById(R.id.tv_artist);
-        TextView tvDuration = (TextView) convertView.findViewById(R.id.tv_duration);
-        if (selectedIds.contains(position)){
-            convertView.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimary));
-        }else {
-            convertView.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimaryDark));
-        }
-        tvTitle.setText(song.title);
-        tvArtist.setText(song.artist);
-        tvDuration.setText(Utilities.getDurationBreakdown(Integer.parseInt(song.duration)));
-        return convertView;
-    }*/
 
 
 }

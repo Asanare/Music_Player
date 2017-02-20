@@ -10,7 +10,7 @@ import android.support.v4.app.FragmentPagerAdapter;
 
 public class PagerAdapter extends FragmentPagerAdapter {
     int mNumOfTabs;
-
+    PlaylistsTab playlistsTab;
     public PagerAdapter(FragmentManager fm, int NumOfTabs) {
         super(fm);
         this.mNumOfTabs = NumOfTabs;
@@ -27,7 +27,9 @@ public class PagerAdapter extends FragmentPagerAdapter {
             case 2:
                 return AlbumTab.newInstance();
             case 3:
-                return PlaylistsTab.newInstance();
+                PlaylistsTab p = PlaylistsTab.newInstance();
+                playlistsTab = p;
+                return p;
             default:
                 return null;
         }

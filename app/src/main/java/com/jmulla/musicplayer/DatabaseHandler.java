@@ -62,7 +62,7 @@ class DatabaseHandler extends SQLiteOpenHelper {
         db.execSQL(CREATE_PLAYLISTDATA_TABLE);
         String CREATE_BLACKLIST_TABLE = "CREATE TABLE " + TABLE_BLACKLIST + "("
                 + KEY_SONGS_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," + KEY_SONGS_TITLE + " TEXT,"
-                + KEY_SONGS_ARTIST + " TEXT," + KEY_SONGS_DURATION + " TEXT," + KEY_SONGS_LOCATION + " TEXT," + KEY_SONG_ID + " TEXT);";
+                + KEY_SONGS_ARTIST + " TEXT," + KEY_SONGS_ALBUM + " TEXT," + KEY_SONGS_COVER_LOC + " TEXT," + KEY_SONGS_DURATION + " TEXT," + KEY_SONGS_LOCATION + " TEXT," + KEY_SONG_ID + " TEXT);";
         db.execSQL(CREATE_BLACKLIST_TABLE);
         Log.d("DB STATUS: ", "CREATED");
     }
@@ -171,8 +171,10 @@ class DatabaseHandler extends SQLiteOpenHelper {
         }.getType();
         ArrayList<Song> songs = new Gson().fromJson(cursor.getString(3), type);
         PlaylistModel playlistmodel = new PlaylistModel(cursor.getString(1), songs, cursor.getString(4));
-        // return contact
         cursor.close();
+        // return contact
+        db.close();
+
         return playlistmodel;
     }
 
@@ -198,7 +200,7 @@ class DatabaseHandler extends SQLiteOpenHelper {
         // Select All Query
         String selectQuery = "SELECT * FROM " + TABLE_PLAYLIST;
 
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         // looping through all rows and adding to list
@@ -223,7 +225,7 @@ class DatabaseHandler extends SQLiteOpenHelper {
         // Select All Query
         String selectQuery = "SELECT * FROM " + tableName;
 
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         // looping through all rows and adding to list

@@ -7,4 +7,21 @@
     <color name="app_color">#616161</color>
     <color name="list_item_background">#212121</color>
     <color name="colorTextPrimary">#80cbc4</color>
+
+
+    <color name="blue_50">#e1e7ec</color>
+    <color name="blue_100">#b5c3d0</color>
+    <color name="blue_200">#839bb1</color>
+    <color name="blue_300">#517392</color>
+    <color name="blue_400">#2c557a</color>
+    <color name="blue_500">#073763</color>
+    <color name="blue_600">#06315b</color>
+    <color name="blue_700">#052a51</color>
+    <color name="blue_800">#042347</color>
+    <color name="blue_900">#021635</color>
+    <color name="blue_A100">#6d97ff</color>
+    <color name="blue_A200">#3a73ff</color>
+    <color name="blue_A400">#074fff</color>
+    <color name="blue_A700">#0044ec</color>
+
 </resources>

@@ -8,11 +8,12 @@ import java.util.ArrayList;
 
 public class AlbumModel {
 
+    private String mAlbum = "";
     private String mArtist = "";
-    private String mTracks = "";
     private ArrayList<Song> mSongs;
 
-    public AlbumModel(String artist) {
+    public AlbumModel(String album, String artist) {
+        mAlbum = album;
         mArtist = artist;
         mSongs = new ArrayList<>();
     }
@@ -37,17 +38,14 @@ public class AlbumModel {
         this.mArtist = artist;
     }
 
-    public String getTracks() {
-        return this.mTracks;
+    public String getAlbum() {
+        return this.mAlbum;
     }
 
-    public void setTracks(String tracks) {
-        this.mTracks = tracks;
+    public void setAlbum(String album) {
+        this.mArtist = album;
     }
 
-    public int getNumberOfTracks() {
-        return this.mSongs.size();
-    }
 
     public ArrayList<Song> getSongs() {
         return this.mSongs;

@@ -26,6 +26,7 @@
         android:text="Artist"
         android:textSize="12sp" />
 
+
     <TextView
         android:id="@+id/tv_search_duration"
         android:layout_width="wrap_content"

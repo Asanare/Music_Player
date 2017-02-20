@@ -2,21 +2,22 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="5dp">
+    android:orientation="vertical">
 
 
     <TextView
         android:id="@+id/album_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:padding="5dp"
         android:text="Album"
-        android:textSize="20sp" />
+        android:textSize="19sp" />
 
     <TextView
         android:id="@+id/album_artist"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:padding="5dp"
         android:text="Artist"
         android:textSize="12sp" />
 

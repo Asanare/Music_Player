@@ -10,6 +10,6 @@ import android.content.Intent;
 public class BackButtonReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-
+        CurrentSong.Back();
     }
 }
