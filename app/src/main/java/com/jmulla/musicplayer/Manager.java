@@ -27,6 +27,7 @@ import java.util.UUID;
 public class Manager {
     //public variables
     public static MediaPlayer mp = new MediaPlayer();
+    public static boolean needToRecreate = false;
     public static Song currentSong;
     public static AudioService audioService;
     public static ArrayList<Song> currentSongList;

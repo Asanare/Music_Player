@@ -37,10 +37,10 @@ public class SettingsActivity extends PreferenceActivity {
                         return;
                     }
                     //if the theme changes, set the new theme
-                    getActivity().getParent().finish();
-                    getActivity().finish();
                     final Intent intent = getActivity().getIntent();
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    getActivity().finish();
+                    Manager.needToRecreate = true;
                     getActivity().startActivity(intent);
                 }
             };

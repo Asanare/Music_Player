@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         Utilities.setThemeHere(this);
         setContentView(R.layout.activity_main);
+        super.onCreate(savedInstanceState);
         //checks if the app has the correct permissions
         int hasStoragePermission = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (hasStoragePermission != PackageManager.PERMISSION_GRANTED) {
@@ -67,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
             initActivity();
 
         }
-        super.onCreate(savedInstanceState);
+
     }
 
 
@@ -139,6 +140,18 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+    }
+
+    @Override
+    protected void onResume() {
+        if (Manager.needToRecreate) {
+            Manager.needToRecreate = false;
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_TASK_ON_HOME);
+            startActivity(intent);
+            this.finish();
+        }
+        super.onResume();
     }
 
     @Override

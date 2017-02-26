@@ -9,9 +9,9 @@ import java.util.concurrent.TimeUnit;
 /***
  * Created by Jamal on 26/07/2016.
  */
-//little utitlity class with a few important misc methods
+//little utility class with a few important misc methods
 class Utilities extends ActivityCompat {
-    //changes milliseonds to minutes and seconds
+    //changes milliseconds to minutes and seconds
     static String getMinutesFromMillis(long millis) {
         if (millis < 0) {
             throw new IllegalArgumentException("Duration must be greater than zero!");

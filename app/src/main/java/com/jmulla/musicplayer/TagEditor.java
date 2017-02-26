@@ -1,8 +1,10 @@
 package com.jmulla.musicplayer;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -25,23 +27,25 @@ import java.io.IOException;
  * Created by Jamal on 07/02/2017.
  */
 //Class for editing id3 tags of songs
-public class TagEditor extends Activity {
+public class TagEditor extends AppCompatActivity {
     //member variables
     Song song;
     int pos;
     EditText et_title, et_artist, et_album;
-    Button btn_cancel, btn_save;
+    Button btn_cancel;
     DatabaseHandler databaseHandler;
+    Tag finalTag;
+    AudioFile finalF;
 
-    //called when this class is created. Initialises everyhting
+    //called when this class is created. Initialises everything
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Utilities.setThemeHere(this);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_edit_tags);
         et_title = (EditText) findViewById(R.id.et_title);
         et_artist = (EditText) findViewById(R.id.et_artist);
         et_album = (EditText) findViewById(R.id.et_album);
-        btn_save = (Button) findViewById(R.id.btn_save_tags);
         btn_cancel = (Button) findViewById(R.id.btn_cancel_tags);
         final Intent intent = getIntent();
         //get the song we're editing
@@ -58,8 +62,8 @@ public class TagEditor extends Activity {
         if (f != null) {
             tag = f.getTag(); //get all tags
         }
-        final Tag finalTag = tag;
-        final AudioFile finalF = f;
+        finalF = f;
+        finalTag = tag;
         databaseHandler = new DatabaseHandler(getBaseContext());
         et_title.setText(song.title);
         et_artist.setText(song.artist);
@@ -72,9 +76,19 @@ public class TagEditor extends Activity {
                 finish();
             }
         });
-        btn_save.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.tag_options, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.save_tags:
                 try {
                     //if the user clicks save, update the song with the new tags
                     if (finalTag != null) {
@@ -96,11 +110,10 @@ public class TagEditor extends Activity {
                     e.printStackTrace();
                 }
                 finish();
-            }
-
-
-        });
-
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
 
     }
 }
