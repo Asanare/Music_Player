@@ -8,6 +8,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="43dp"
+        android:background="?attr/TB"
+        android:elevation="10dp"
         android:orientation="horizontal">
 
         <TextView
@@ -16,19 +18,16 @@
             android:layout_height="match_parent"
             android:layout_weight="1"
             android:padding="5dp"
-            android:textColor="#ffff"
+            android:textColor="?attr/colorAccent"
             android:textSize="23sp" />
     </LinearLayout>
 
-    <View
-        android:layout_width="fill_parent"
-        android:layout_height="3dp"
-        android:background="@color/blue_900" />
+
     <!--thin line-->
     <ListView
         android:id="@+id/generic_song_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:divider="@color/blue_A100"
+        android:divider="?attr/colorAccent"
         android:dividerHeight="1dp" />
 </LinearLayout>

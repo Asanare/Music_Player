@@ -1,41 +1,49 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <resources>
 
-    <style name="AppTheme" parent="Theme.AppCompat">
-        <!-- Customize your theme here. -->
-        <!--        <item name="colorPrimary">@color/colorPrimary</item>
-                <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-                <item name="colorAccent">@color/colorAccent</item>
-                <item name="android:textColorPrimary">#FFF</item>
-                <item name="android:textColor">#FFF</item>
-                <item name="android:windowBackground">@color/colorPrimaryDark</item>
-                <item name="android:navigationBarColor">@color/colorPrimaryDark</item>
-                <item name="windowNoTitle">true</item>
-                <item name="windowActionBar">false</item>-->
-        <item name="colorPrimary">@color/blue_700</item>
-        <item name="colorAccent">@color/blue_A100</item>
-        <item name="android:navigationBarColor">@color/blue_800</item>
-        <item name="android:colorBackground">@color/blue_400</item>
-        <item name="colorPrimaryDark">@color/blue_800</item>
+    <style name="AppTheme.Blue" parent="Theme.AppCompat">
+        <item name="colorPrimary">@color/colorPrimaryBlue</item>
+        <item name="colorAccent">@color/colorAccentBlue</item>
+        <item name="android:navigationBarColor">@color/colorNavigationBlue</item>
+        <item name="android:colorBackground">@color/colorBackgroundBlue</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkBlue</item>
         <item name="windowActionModeOverlay">true</item>
         <item name="colorButtonNormal">@color/blue_700</item>
-        <item name="android:textColorPrimary">@color/blue_100</item>
-
+        <item name="android:textColorPrimary">@color/textColorPrimaryBlue</item>
+        <item name="colorBar1">@color/blue_400</item>
+        <item name="colorBar2">@color/blue_300</item>
+        <item name="TB">@color/blue_600</item>
     </style>
 
-    <style name="BlueButton" parent="Widget.AppCompat.Button">
-        <item name="colorButtonNormal">@color/blue_200</item>
+    <style name="AppTheme.Dark" parent="Theme.AppCompat">
+        <item name="colorPrimary">@color/colorPrimaryD</item>
+        <item name="colorAccent">@color/colorAccentD</item>
+        <item name="android:navigationBarColor">@color/colorNavigationD</item>
+        <item name="android:colorBackground">@color/colorBackgroundD</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDarkD</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="android:buttonStyle">@style/ButtonColor</item>
+        <item name="android:textColorPrimary">#fff</item>
+        <item name="android:textColor">#404048</item>
+        <item name="colorBar1">@color/colorBackgroundD</item>
+        <item name="colorBar2">#E0E0E0</item>
+        <item name="TB">@color/colorPrimaryD</item>
+    </style>
+
+    <style name="ButtonColor" parent="@android:style/Widget.Button">
+        <item name="android:textColor">@color/colorAccentD</item>
     </style>
 
     <style name="Base.Widget.Design.TabLayout" parent="android:Widget">
-        <item name="tabBackground">@color/blue_600</item>
-        <item name="tabIndicatorColor">@color/blue_A100</item>
+        <item name="tabBackground">?TB</item>
+        <item name="tabIndicatorColor">?colorAccent</item>
         <item name="tabIndicatorHeight">2dp</item>
     </style>
-    <!-- Base application theme. -->
 
     <style name="SplashTheme" parent="Theme.AppCompat">
         <item name="android:windowBackground">@drawable/splash</item>
+        <item name="android:colorBackground">@color/blue_400</item>
     </style>
 
 

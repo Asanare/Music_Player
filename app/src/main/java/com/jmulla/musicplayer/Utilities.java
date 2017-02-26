@@ -1,12 +1,18 @@
 package com.jmulla.musicplayer;
 
+import android.content.Context;
+import android.preference.PreferenceManager;
+import android.support.v4.app.ActivityCompat;
+
 import java.util.concurrent.TimeUnit;
 
-/**
+/***
  * Created by Jamal on 26/07/2016.
  */
-public class Utilities {
-    public static String getMinutesFromMillis(long millis) {
+//little utitlity class with a few important misc methods
+class Utilities extends ActivityCompat {
+    //changes milliseonds to minutes and seconds
+    static String getMinutesFromMillis(long millis) {
         if (millis < 0) {
             throw new IllegalArgumentException("Duration must be greater than zero!");
 
@@ -30,7 +36,16 @@ public class Utilities {
         return String.valueOf(duration);
     }
 
-    public static float getSecondsFromMillis(long millis){
-        return ((float) millis * (float) 0.001);
+    //sets the theme for a particular activity
+    static void setThemeHere(Context context) {
+        String theme = PreferenceManager.getDefaultSharedPreferences(context).getString("theme", "0");
+        switch (theme) {
+            case "0":
+                context.setTheme(R.style.AppTheme_Dark);
+                break;
+            case "1":
+                context.setTheme(R.style.AppTheme_Blue);
+        }
     }
+
 }

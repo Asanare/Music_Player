@@ -12,7 +12,7 @@
         android:layout_marginRight="5sp"
         android:layout_marginTop="10sp"
         android:background="@drawable/drag_reorder1"
-        android:backgroundTint="#ffffff" />
+        android:backgroundTint="?attr/colorAccent" />
     <TextView
         android:id="@+id/tv_title"
         android:layout_width="wrap_content"

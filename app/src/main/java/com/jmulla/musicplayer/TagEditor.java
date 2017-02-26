@@ -21,17 +21,19 @@ import org.jaudiotagger.tag.TagException;
 import java.io.File;
 import java.io.IOException;
 
-/**
+/***
  * Created by Jamal on 07/02/2017.
  */
-
+//Class for editing id3 tags of songs
 public class TagEditor extends Activity {
+    //member variables
     Song song;
     int pos;
     EditText et_title, et_artist, et_album;
     Button btn_cancel, btn_save;
     DatabaseHandler databaseHandler;
 
+    //called when this class is created. Initialises everyhting
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,19 +44,19 @@ public class TagEditor extends Activity {
         btn_save = (Button) findViewById(R.id.btn_save_tags);
         btn_cancel = (Button) findViewById(R.id.btn_cancel_tags);
         final Intent intent = getIntent();
+        //get the song we're editing
         song = (Song) intent.getSerializableExtra("com.jmulla.musicplayer.TagEditor.SONG");
         pos = intent.getIntExtra("com.jmulla.musicplayer.TagEditor.POSITION", -1);
         File file = new File(song.location);
         AudioFile f = null;
         try {
             f = AudioFileIO.read(file);
-
         } catch (CannotReadException | IOException | TagException | ReadOnlyFileException | InvalidAudioFrameException e) {
             e.printStackTrace();
         }
         Tag tag = null;
         if (f != null) {
-            tag = f.getTag();
+            tag = f.getTag(); //get all tags
         }
         final Tag finalTag = tag;
         final AudioFile finalF = f;
@@ -74,20 +76,15 @@ public class TagEditor extends Activity {
             @Override
             public void onClick(View v) {
                 try {
+                    //if the user clicks save, update the song with the new tags
                     if (finalTag != null) {
                         finalTag.setField(FieldKey.ARTIST, et_artist.getText().toString());
                         finalTag.setField(FieldKey.TITLE, et_title.getText().toString());
                         finalTag.setField(FieldKey.ALBUM, et_album.getText().toString());
                         Song s = new Song(song.id, et_title.getText().toString(), et_artist.getText().toString(), et_album.getText().toString(), song.duration, song.location);
-                        //databaseHandler.updateSong(s);
                         if (databaseHandler.updateSong(s) > 0) {
                             Manager.needToUpdate = true;
                         }
-                        //List<Pair<Long, Song>> itemList = Listfragment.listAdapter.getItemList();
-                        //itemList.remove(pos);
-                        //itemList.add(pos, new Pair<>((long) pos, s));
-                        //Listfragment.listAdapter.setItemList(itemList);
-                        //Listfragment.listAdapter.notifyDataSetChanged();
                     }
 
                 } catch (FieldDataInvalidException e) {

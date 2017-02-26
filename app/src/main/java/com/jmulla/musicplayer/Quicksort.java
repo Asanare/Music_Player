@@ -22,7 +22,6 @@ public class Quicksort {
         int i = low, j = high;
         // Get the pivot element from the middle of the list
         int pivot = numbers[low + (high - low) / 2];
-
         // Divide into two lists
         while (i <= j) {
             // If the current value from the left list is smaller then the pivot
@@ -35,7 +34,6 @@ public class Quicksort {
             while (numbers[j] > pivot) {
                 j--;
             }
-
             // If we have found a values in the left list which is larger then
             // the pivot element and if we have found a value in the right list
             // which is smaller then the pivot element then we exchange the

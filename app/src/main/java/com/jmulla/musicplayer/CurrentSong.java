@@ -19,7 +19,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.ImageView;
-import android.widget.RemoteViews;
 import android.widget.SeekBar;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -27,14 +26,14 @@ import android.widget.Toast;
 
 import java.io.FileNotFoundException;
 import java.io.InputStream;
-import java.util.ArrayList;
 
+//This activity is where the user can interact with the song playback and can
 public class CurrentSong extends AppCompatActivity {
+    //define member variables
     static boolean is_paused = false;
     static AudioService audioService;
     static NotificationCompat.Builder notiBuilder;
     static NotificationManager mNotificationManager;
-    static RemoteViews remoteViews;
     static Button btn_play;
     static TextView tv_title;
     static TextView tv_artist;
@@ -45,7 +44,6 @@ public class CurrentSong extends AppCompatActivity {
     static String song_cover_loc;
     static String songTitle;
     static String songId;
-    public ArrayList<Song> allSongs;
     Button btn_back;
     ImageView imageView;
     Button btn_fwd;
@@ -54,8 +52,9 @@ public class CurrentSong extends AppCompatActivity {
     Intent playIntent;
     boolean musicBound = false;
     String songLoc;
-    String selectedImagePath;
     private int startPos;
+
+    //method to connect to the service that is playing the music. This lets us interact with the song
     private ServiceConnection musicConnection = new ServiceConnection() {
 
         @Override
@@ -75,33 +74,33 @@ public class CurrentSong extends AppCompatActivity {
         }
     };
 
-
-
-
+    //method to change the state of playback.
     public static void changeState(Context context) {
         if (is_paused) {
             createPlaybackNotification(context, 0);
-            //createPauseNotification(context);
             resume();
             try {
                 btn_play.setBackgroundResource(R.drawable.pause_button);
             } catch (Exception e) {
+                e.printStackTrace();
                 Log.d("Exception e", e.toString());
             }
             is_paused = false;
         } else {
             createPlaybackNotification(context, 1);
-            //createPlayNotification(context);
             pause();
             try {
                 btn_play.setBackgroundResource(R.drawable.play_button);
             } catch (Exception e) {
+                e.printStackTrace();
                 Log.d("Exception e", e.toString());
             }
             is_paused = true;
         }
     }
 
+
+    //method which creates the notification so the user can interact with the song
     public static void createPlaybackNotification(Context context, int state) {
         Intent play = new Intent(context, ChangeStateReceiver.class);
         play.setAction("com.jmulla.musicplayer.CHANGE_STATE_BUTTON_CLICKED");
@@ -128,15 +127,6 @@ public class CurrentSong extends AppCompatActivity {
         );
 
         notiBuilder.setContentIntent(openSong);
-
-
-            /*Bundle b = new Bundle();
-            b.putSerializable("Songs", allSongs);
-            intent.putExtras(b);*/
-            /*intent.putExtra("SONG_LOCATION", allSongs.get(position).location);
-            intent.putExtra("SONG_ARTIST", allSongs.get(position).artist);
-            intent.putExtra("SONG_DURATION", allSongs.get(position).duration);
-            intent.putExtra("SONG_TITLE", allSongs.get(position).title);*/
         notiBuilder.addAction(R.drawable.back_button, "Previous", backIntent);
         if (state == 0) {
             notiBuilder.addAction(R.drawable.pause_button, "Pause", playIntent);
@@ -144,35 +134,36 @@ public class CurrentSong extends AppCompatActivity {
             notiBuilder.addAction(R.drawable.play_button, "Play", playIntent);
         }
         notiBuilder.addAction(R.drawable.next_button, "Next", nextIntent);
-
         notiBuilder.setOngoing(true);
-
         mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-
         mNotificationManager.notify(0, notiBuilder.build());
     }
 
+    //method to remove all notifications
     public static void removeAllNotifs() {
         mNotificationManager.cancelAll();
     }
 
+    //resumes playback
     public static void resume() {
         audioService.ResumeAudio();
     }
 
+    //pauses playback
     public static void pause() {
         audioService.PauseAudio();
     }
 
-    public static void fillInfo(){
-
+    //changes the info for the new song
+    public static void fillInfo() {
         tv_title.setText(Manager.currentSong.title);
         tv_artist.setText(Manager.currentSong.artist);
-        assert seekBar!= null;
+        assert seekBar != null;
         seekBar.setMax(Integer.parseInt(Manager.currentSong.duration));
 
     }
 
+    //convenience method to make a toast
     public static void makeToast(Context context, Object object) {
         try {
             Toast.makeText(context, String.valueOf(object), Toast.LENGTH_SHORT).show();
@@ -182,6 +173,7 @@ public class CurrentSong extends AppCompatActivity {
 
     }
 
+    //goes to the previous song
     public static void Back() {
         audioService.PreviousSong();
         try {
@@ -191,6 +183,7 @@ public class CurrentSong extends AppCompatActivity {
         }
     }
 
+    //method to play the next song
     public static void Forward() {
         audioService.NextSong();
         try {
@@ -200,9 +193,9 @@ public class CurrentSong extends AppCompatActivity {
         }
     }
 
+    //This method is called after the user picks an image for the album cover. It then updates the song with the new cover
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK) {
-
             try {
                 final Uri imageUri = data.getData();
                 final InputStream imageStream = getContentResolver().openInputStream(imageUri);
@@ -215,15 +208,17 @@ public class CurrentSong extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        }
+    }
 
+    //method called when this activity is created. Initialises the activity, sets button receivers and
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Utilities.setThemeHere(this); //sets the theme
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_current_song);
         seekBar = (SeekBar) findViewById(R.id.sb_progress);
-
         final Handler mHandler = new Handler();
+        //sets the seekbar position every second
         this.runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -238,16 +233,16 @@ public class CurrentSong extends AppCompatActivity {
                 }
             }
         });
-
+        //assigns views to variables
         tv_title = (TextView) findViewById(R.id.tv_current_title);
-        tv_artist = (TextView) findViewById(R.id.tv_current_artist) ;
+        tv_artist = (TextView) findViewById(R.id.tv_current_artist);
         btn_play = (Button) findViewById(R.id.btn_play_pause);
         btn_back = (Button) findViewById(R.id.btn_back);
         btn_fwd = (Button) findViewById(R.id.btn_fwd);
         imageView = (ImageView) findViewById(R.id.img_cover_art);
-
         sw_repeat = (Switch) findViewById(R.id.sw_current_repeat);
         sw_shuffle = (Switch) findViewById(R.id.sw_current_shuffle);
+        //starts an activity so the user can choose an image
         imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -257,33 +252,35 @@ public class CurrentSong extends AppCompatActivity {
                 startActivityForResult(intent, 1);
             }
         });
-
+        //sets the actions for the repeat button
         sw_repeat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if ((Manager.currentState == Manager.State.REPEAT_ONE)){
+                if ((Manager.currentState == Manager.State.REPEAT_ONE)) {
                     Manager.currentState = Manager.State.NORMAL;
                     buttonView.setChecked(false);
-                } else if ((Manager.currentState == Manager.State.NORMAL || Manager.currentState == Manager.State.SHUFFLE)){
+                } else if ((Manager.currentState == Manager.State.NORMAL || Manager.currentState == Manager.State.SHUFFLE)) {
                     Manager.currentState = Manager.State.REPEAT_ONE;
                     buttonView.setChecked(true);
                     makeToast(getApplicationContext(), "REPEATING");
                 }
             }
         });
+        //sets the actions for the shuffle button
         sw_shuffle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if ((Manager.currentState == Manager.State.SHUFFLE)){
+                if ((Manager.currentState == Manager.State.SHUFFLE)) {
                     Manager.currentState = Manager.State.NORMAL;
                     buttonView.setChecked(false);
-                } else if ((Manager.currentState == Manager.State.NORMAL || Manager.currentState == Manager.State.REPEAT_ONE)){
+                } else if ((Manager.currentState == Manager.State.NORMAL || Manager.currentState == Manager.State.REPEAT_ONE)) {
                     Manager.currentState = Manager.State.SHUFFLE;
                     buttonView.setChecked(true);
                     makeToast(getApplicationContext(), "SHUFFLING");
                 }
             }
         });
+        //listener for the back button
         btn_back.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -291,6 +288,7 @@ public class CurrentSong extends AppCompatActivity {
                 fillInfo();
             }
         });
+        //listener for the forward button
         btn_fwd.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -298,12 +296,8 @@ public class CurrentSong extends AppCompatActivity {
                 fillInfo();
             }
         });
+        //assign values to member variables
         Intent intent = getIntent();
-        /*songId = intent.getStringExtra("SONG_ID");
-        songLoc = intent.getStringExtra("SONG_LOCATION");
-        songArtist = intent.getStringExtra("SONG_ARTIST");
-        songDuration = intent.getStringExtra("SONG_DURATION");
-        songTitle = intent.getStringExtra("SONG_TITLE");*/
         Song CS = Manager.currentSong;
         songId = CS.getId();
         songLoc = CS.getLocation();
@@ -312,10 +306,9 @@ public class CurrentSong extends AppCompatActivity {
         song_cover_loc = CS.getCover_loc();
         songDuration = CS.getDuration();
         songTitle = CS.getTitle();
-
         startPos = intent.getIntExtra("START_POSITION", 0);
         try {
-
+            //set album cover
             final InputStream imageStream = getContentResolver().openInputStream(Uri.parse(song_cover_loc));
             final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
             Bitmap b = Bitmap.createScaledBitmap(selectedImage, 150, 150, true);
@@ -323,8 +316,6 @@ public class CurrentSong extends AppCompatActivity {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-
-        //allSongs = (ArrayList<Song>) intent.getExtras().getSerializable("Songs");
         fillInfo();
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -338,7 +329,6 @@ public class CurrentSong extends AppCompatActivity {
                 }
 
             }
-
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
 
@@ -351,11 +341,9 @@ public class CurrentSong extends AppCompatActivity {
         });
         if (is_paused) {
             createPlaybackNotification(this, 1);
-            //createPlayNotification(this);
             btn_play.setBackgroundResource(R.drawable.play_button);
         } else {
             createPlaybackNotification(this, 0);
-            //createPauseNotification(this);
             btn_play.setBackgroundResource(R.drawable.pause_button);
         }
         btn_play.setOnClickListener(new View.OnClickListener() {
@@ -364,7 +352,6 @@ public class CurrentSong extends AppCompatActivity {
                 changeState(getBaseContext());
             }
         });
-
     }
 
     @Override
@@ -376,7 +363,6 @@ public class CurrentSong extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-
         if (playIntent == null) {
             playIntent = new Intent(this, AudioService.class);
             startService(playIntent);

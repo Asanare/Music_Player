@@ -2,38 +2,35 @@ package com.jmulla.musicplayer;
 
 import java.util.ArrayList;
 
-/**
+/***
  * Created by Jamal on 16/01/2017.
  */
-
-public class AlbumModel {
-
+//This class holds all the information about any album as well as the setters and getters.
+class AlbumModel {
+    //member variables//
     private String mAlbum = "";
     private String mArtist = "";
     private ArrayList<Song> mSongs;
 
-    public AlbumModel(String album, String artist) {
+    //constructor//
+    AlbumModel(String album, String artist) {
+        //assign parameters to member variables
         mAlbum = album;
         mArtist = artist;
         mSongs = new ArrayList<>();
     }
 
-    public void addSong(Song songs) {
+    //Method to add a song to the list of songs
+    void addSong(Song songs) {
         this.mSongs.add(songs);
     }
 
-    /***********
-     * Get Methods
-     ****************/
-
+    //Getters//
     public String getArtist() {
         return this.mArtist;
     }
 
-    /***********
-     * Set Methods
-     ******************/
-
+    //Setters//
     public void setArtist(String artist) {
         this.mArtist = artist;
     }
@@ -46,7 +43,6 @@ public class AlbumModel {
         this.mArtist = album;
     }
 
-
     public ArrayList<Song> getSongs() {
         return this.mSongs;
     }
@@ -54,5 +50,4 @@ public class AlbumModel {
     public void setSongs(ArrayList<Song> songs) {
         this.mSongs = songs;
     }
-
 }

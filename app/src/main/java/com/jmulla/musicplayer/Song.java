@@ -2,9 +2,10 @@ package com.jmulla.musicplayer;
 
 import java.io.Serializable;
 
-/**
+/***
  * Created by Jamal on 15/07/2016.
  */
+//Basic class used to hold song information
 public class Song implements Serializable {
     public String title;
     public String artist;
@@ -14,16 +15,19 @@ public class Song implements Serializable {
     public String location;
     public String id;
 
+    //constructors//
     public Song(String id, String title, String artist, String album, String duration, String location) {
         this.title = title;
         this.artist = artist;
         this.album = album;
-        this.cover_loc = cover_loc;
         this.duration = duration;
         this.location = location;
         this.id = id;
     }
 
+    public Song() {
+
+    }
     public Song(String id, String title, String artist, String album, String cover_loc, String duration, String location) {
         this.title = title;
         this.artist = artist;
@@ -34,10 +38,7 @@ public class Song implements Serializable {
         this.id = id;
     }
 
-    public Song() {
-
-    }
-
+    //setters and getters//
     public String getTitle() {
         return title;
     }
@@ -62,8 +63,14 @@ public class Song implements Serializable {
         this.album = album;
     }
 
+    //get the location of the album cover
     public String getCover_loc() {
-        return cover_loc;
+        if (cover_loc == null) {
+            return "drawable://" + R.drawable.refresh_icon;
+        } else {
+            return cover_loc;
+        }
+
     }
 
     public void setCover_loc(String cover_loc) {

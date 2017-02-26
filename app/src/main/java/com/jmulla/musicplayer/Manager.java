@@ -21,23 +21,25 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.UUID;
 
-/**
+/***
  * Created by Jamal on 14/07/2016.
  */
 public class Manager {
+    //public variables
     public static MediaPlayer mp = new MediaPlayer();
     public static Song currentSong;
     public static AudioService audioService;
     public static ArrayList<Song> currentSongList;
     public static ArrayList<Song> fullSongList;
-    public static int appBeginCode = 0;
     public static boolean needToUpdate = false;
     public static State currentState = State.NORMAL;
 
+    //generates a random id
     public static String generateId() {
         return UUID.randomUUID().toString();
     }
 
+    //gets all the albums from the database
     ArrayList<AlbumModel> getAllAlbumData(Context context) {
         ArrayList<AlbumModel> allAlbumData = new ArrayList<>();
         LinkedHashSet<ArrayList> allAlbums = new LinkedHashSet<>();
@@ -64,8 +66,8 @@ public class Manager {
 
                 if (f != null) {
 
-                    String album = f.getTag().getFirst(FieldKey.ALBUM);
-                    String artist = f.getTag().getFirst(FieldKey.ARTIST);
+                    String album = f.getTag().getFirst(FieldKey.ALBUM); //get the album from the tags
+                    String artist = f.getTag().getFirst(FieldKey.ARTIST); //get the artist from the tags
                     ArrayList<String> albumData = new ArrayList<>();
                     if (album.equals("")) {
                         albumData.add(0, "Unknown");
@@ -106,6 +108,7 @@ public class Manager {
         return allAlbumData;
     }
 
+    //get all the artist data
     ArrayList<ArtistModel> getAllArtistData(Context context) {
         ArrayList<ArtistModel> allArtistData = new ArrayList<>();
         LinkedHashSet<String> allArtists = new LinkedHashSet<>();
@@ -123,7 +126,6 @@ public class Manager {
         AudioFile f = null;
         if (cursor != null) {
             while (cursor.moveToNext()) {
-                //allArtistData.add(new ArtistModel(cursor.getString(0)));
                 File file = new File(cursor.getString(0));
                 try {
                     f = AudioFileIO.read(file);
@@ -165,6 +167,7 @@ public class Manager {
         return allArtistData;
     }
 
+    //get all the playlists
     public ArrayList<PlaylistModel> getPlaylists(Context context) {
         DatabaseHandler playlistDatabaseHandler = new DatabaseHandler(context);
         ArrayList<PlaylistModel> playlistModels;
@@ -172,6 +175,7 @@ public class Manager {
         return playlistModels;
     }
 
+    //add a new playlist to the playlist table
     public void addPlaylists(Context context, ArrayList<PlaylistModel> playlistModels) {
         DatabaseHandler playlistDatabaseHandler = new DatabaseHandler(context);
         for (PlaylistModel playlistModel : playlistModels) {
@@ -179,6 +183,7 @@ public class Manager {
         }
     }
 
+    //get all the songs from either the database or device storage
     public ArrayList<Song> getAllMusicData(Context context) {
         DatabaseHandler databaseHandler = new DatabaseHandler(context);
 
@@ -200,26 +205,6 @@ public class Manager {
                     selection,
                     null,
                     null);
-            //region old code
-            /*String selection = MediaStore.Audio.Media.IS_MUSIC + " != 0";
-
-            String[] projection = {
-                    MediaStore.Audio.Media._ID,
-                    MediaStore.Audio.Media.ARTIST,
-                    MediaStore.Audio.Media.TITLE,
-                    MediaStore.Audio.Media.DATA,
-                    MediaStore.Audio.Media.DISPLAY_NAME,
-                    MediaStore.Audio.Media.DURATION
-
-            };
-
-            cursor = context.getContentResolver().query(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                    projection,
-                    selection,
-                    null,
-                    null);*/
-            //endregion
             ArrayList<Song> songs = new ArrayList<>();
             AudioFile f = null;
             if (cursor != null) {
@@ -242,23 +227,6 @@ public class Manager {
                     songs.add(new Song(id, title, artist, album, defaultCover, dur, loc));
                 }
             }
-                /*ids.add(cursor.getString(0));
-                artists.add(cursor.getString(1));
-                titles.add(cursor.getString(2));
-                paths.add(cursor.getString(3));
-                display_names.add(cursor.getString(4));
-                durations_ms.add(cursor.getString(5));
-                    ArrayList<String> songData = new ArrayList<>();
-                    songData.add(cursor.getString(0));
-                    songData.add(cursor.getString(1));
-                    songData.add(cursor.getString(2));
-                    songData.add(cursor.getString(3));
-                    songData.add(cursor.getString(4));
-                    songData.add(cursor.getString(5));
-                    songs.add(songData);
-                }
-            }
-*/
             if (cursor != null) {
                 cursor.close();
             }
@@ -280,13 +248,9 @@ public class Manager {
             return db.getAllSongs(DatabaseHandler.TABLE_SONGS, true);
         }
     }
-/*    public void addToPlaylist(Context context, Song song, PlaylistModel playlistModel){
-        ArrayList<PlaylistModel> playlistModels = getPlaylists(context);
-        DatabaseHandler playlistDatabaseHandler = new DatabaseHandler(context);
-        playlistDatabaseHandler.addSongToPlaylist(playlistModel, song);
-    }*/
 
-    public enum State {
+    //enum for the different states the playback can be in
+    enum State {
         NORMAL,
         SHUFFLE,
         REPEAT_ONE

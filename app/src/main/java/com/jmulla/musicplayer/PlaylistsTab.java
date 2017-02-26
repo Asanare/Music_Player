@@ -22,25 +22,27 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
-/**
+/***
  * Created by Jamal on 13/07/2016.
  */
+//Fragment to show, edit and delete playlists
 public class PlaylistsTab extends Fragment implements FragmentLifecycle {
-    static PlaylistsTabAdapter adapter;
+    //member variables
+    PlaylistsTabAdapter adapter;
     ListView lv;
     ImageButton btn_newPlaylist;
     Manager manager = new Manager();
     ActionMode mActionMode;
 
-
+    //method to return a new instance of this class
     public static PlaylistsTab newInstance() {
         return new PlaylistsTab();
     }
 
+    //method that inflates the alyout
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.playlists_tab, container, false);
@@ -48,10 +50,10 @@ public class PlaylistsTab extends Fragment implements FragmentLifecycle {
         return view;
     }
 
+    //called when this is resumed. Reloads the playlist list
     @Override
     public void onResume() {
         super.onResume();
-        Toast.makeText(getContext(), "Resumed", Toast.LENGTH_SHORT).show();
         new ReloadPlaylists(getContext()).execute();
     }
 
@@ -60,26 +62,18 @@ public class PlaylistsTab extends Fragment implements FragmentLifecycle {
         new ReloadPlaylists(getContext()).execute();
     }
 
-
-    void createFragment() {
-        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-        Fragment newFragment = new PlaylistsTab();
-        transaction.replace(R.id.playlists_container, newFragment);
-        transaction.commit();
-    }
-
+    //reloads the fragment
     public void reload() {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.detach(PlaylistsTab.this).attach(PlaylistsTab.this).commit();
     }
 
+    //initialises the variables and sets the list of playlists up
     void init(View view) {
         lv = (ListView) view.findViewById(R.id.lv_playlists);
         btn_newPlaylist = (ImageButton) view.findViewById(R.id.btn_new_playlist);
         TextView tvPlaylists = (TextView) view.findViewById(R.id.tv_no_playlists);
         adapter = new PlaylistsTabAdapter(getContext(), manager.getPlaylists(getContext()));
-        CurrentSong.makeToast(getContext(), "LIKE NEW");
-
         if (adapter.getCount() == 0) {
             lv.setVisibility(View.INVISIBLE);
             tvPlaylists.setVisibility(View.VISIBLE);
@@ -88,7 +82,7 @@ public class PlaylistsTab extends Fragment implements FragmentLifecycle {
             tvPlaylists.setVisibility(View.INVISIBLE);
         }
         lv.setAdapter(adapter);
-
+        //creates a new playlist and brings up a dialog so the user can set the name
         btn_newPlaylist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -119,20 +113,21 @@ public class PlaylistsTab extends Fragment implements FragmentLifecycle {
         });
     }
 
-
+    //adapter to show the playlists in a list
     class PlaylistsTabAdapter extends BaseAdapter {
         private ArrayList<PlaylistModel> mPlaylistModels;
         private Context mContext;
         private LayoutInflater inflater = null;
 
+        //constructor//
         PlaylistsTabAdapter(Context context, ArrayList<PlaylistModel> playlistModels) {
-            // TODO Auto-generated constructor stub
             mPlaylistModels = playlistModels;
             mContext = context;
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
         }
 
+        //swaps the current playlist list with a new one
         public void swapItems(ArrayList<PlaylistModel> playlistModels) {
             this.mPlaylistModels = playlistModels;
             notifyDataSetChanged();
@@ -140,28 +135,27 @@ public class PlaylistsTab extends Fragment implements FragmentLifecycle {
 
         @Override
         public int getCount() {
-            // TODO Auto-generated method stub
             return mPlaylistModels.size();
         }
 
         @Override
         public Object getItem(int position) {
-            // TODO Auto-generated method stub
             return position;
         }
 
         @Override
         public long getItemId(int position) {
-            // TODO Auto-generated method stub
             return position;
         }
 
+        //method which creates the views and shows all the playlists in a list
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
-            // TODO Auto-generated method stub
+
             Holder holder;
             View rowView = convertView;
             final ActionMode.Callback mActionModeCallback;
+            //action mode used for contextual menu
             mActionModeCallback = new ActionMode.Callback() {
 
                 // Called when the action mode is created; startActionMode() was called
@@ -208,11 +202,12 @@ public class PlaylistsTab extends Fragment implements FragmentLifecycle {
             } else {
                 holder = (Holder) rowView.getTag();
             }
-
+            //sets the different views to the correct data
             holder.p_name = (TextView) rowView.findViewById(R.id.playlist_name);
             holder.p_name.setText(mPlaylistModels.get(position).getName());
             holder.p_tracks = (TextView) rowView.findViewById(R.id.playlist_tracks);
             holder.p_tracks.setText(mPlaylistModels.get(position).getNumberOfTracks());
+            //if a playlist is selected, open the list of songs up
             rowView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -220,7 +215,6 @@ public class PlaylistsTab extends Fragment implements FragmentLifecycle {
                     intent.putExtra("com.jmulla.musicplayer.SONGS", mPlaylistModels.get(position).getSongs());
                     intent.putExtra("NAME", mPlaylistModels.get(position).getName());
                     startActivity(intent);
-                    //Toast.makeText(mContext, "You Clicked "+mPlaylistModels.get(position).getName(), Toast.LENGTH_LONG).show();
                 }
             });
 
@@ -230,18 +224,16 @@ public class PlaylistsTab extends Fragment implements FragmentLifecycle {
                     if (mActionMode != null) {
                         return false;
                     }
-
                     // Start the CAB using the ActionMode.Callback defined above
-                    //mActionMode = getActivity().startActionMode(mActionModeCallback);
                     mActionMode = ((AppCompatActivity) getContext()).startSupportActionMode(mActionModeCallback);
                     v.setSelected(true);
                     return true;
                 }
             });
-
             return rowView;
         }
 
+        //class that holds the different views that are filled in
         private class Holder {
             TextView p_name;
             TextView p_tracks;
@@ -249,12 +241,12 @@ public class PlaylistsTab extends Fragment implements FragmentLifecycle {
 
     }
 
+    //Class that loads up the playlists in the background. This is so the UI is not blocked and there is no visible lag
     public class ReloadPlaylists extends AsyncTask<Void, Integer, ArrayList<PlaylistModel>> {
         ProgressDialog pd_ring;
         View mView;
         ArrayList<PlaylistModel> playlistModels;
         Context mContext;
-
         ReloadPlaylists(View view) {
             this.mView = view;
         }
@@ -277,13 +269,11 @@ public class PlaylistsTab extends Fragment implements FragmentLifecycle {
         }
 
         protected void onPostExecute(ArrayList<PlaylistModel> result) {
+            //set the list of items to what we just got
             adapter.swapItems(result);
             if (pd_ring != null) {
                 pd_ring.dismiss();
             }
-            //initialiseLayouts(mView);
-            //setupListRecyclerView();
-            //tv_count.setText(String.format("%s songs", Integer.toString(result.size())));
 
         }
     }

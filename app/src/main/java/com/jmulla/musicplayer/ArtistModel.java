@@ -2,47 +2,33 @@ package com.jmulla.musicplayer;
 
 import java.util.ArrayList;
 
-/**
+/***
  * Created by Jamal on 16/01/2017.
  */
-
+//holds all the information about an artist including their songs and name
 public class ArtistModel {
+    //member variables//
+    private String mArtist = ""; //artist name
+    private ArrayList<Song> mSongs; //all the songs that share this artist
 
-    private String mArtist = "";
-    private String mTracks = "";
-    private ArrayList<Song> mSongs;
-
+    //construtor//
     public ArtistModel(String artist) {
+        //initialises this class
         mArtist = artist;
         mSongs = new ArrayList<>();
     }
 
+    //setters and getters//
     public void addSong(Song songs) {
         this.mSongs.add(songs);
-    }
-
-    /***********
-     * Get Methods
-     ****************/
+    }  //add song to the list
 
     public String getArtist() {
         return this.mArtist;
     }
 
-    /***********
-     * Set Methods
-     ******************/
-
     public void setArtist(String artist) {
         this.mArtist = artist;
-    }
-
-    public String getTracks() {
-        return this.mTracks;
-    }
-
-    public void setTracks(String tracks) {
-        this.mTracks = tracks;
     }
 
     public int getNumberOfTracks() {
@@ -54,7 +40,7 @@ public class ArtistModel {
     }
 
     public void setSongs(ArrayList<Song> songs) {
-        this.mSongs = songs;
+        this.mSongs = songs; //replace song list with a new one
     }
 
 }

@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#616161</color>
-    <color name="colorPrimaryDark">#212121</color>
-    <color name="colorAccent">#000</color>
-    <color name="colorLight">#c1d9ff</color>
-    <color name="app_color">#616161</color>
-    <color name="list_item_background">#212121</color>
-    <color name="colorTextPrimary">#80cbc4</color>
+    <!--Misc colors-->
+    <!--Blue theme-->
+    <color name="colorPrimaryBlue">@color/blue_600</color>
+    <color name="colorPrimaryDarkBlue">@color/blue_800</color>
+    <color name="colorAccentBlue">@color/blue_A100</color>
+    <color name="colorBackgroundBlue">@color/blue_400</color>
+    <color name="colorNavigationBlue">@color/blue_600</color>
+    <color name="textColorPrimaryBlue">@color/blue_50</color>
+
+    <!--Dark theme-->
+    <color name="colorPrimaryD">#757575</color>
+    <color name="colorPrimaryDarkD">#424242</color>
+    <color name="colorAccentD">#FF8A80</color>
+    <color name="colorBackgroundD">#BDBDBD</color>
+    <color name="colorNavigationD">#757575</color>
 
 
     <color name="blue_50">#e1e7ec</color>
-    <color name="blue_100">#b5c3d0</color>
-    <color name="blue_200">#839bb1</color>
     <color name="blue_300">#517392</color>
     <color name="blue_400">#2c557a</color>
-    <color name="blue_500">#073763</color>
     <color name="blue_600">#06315b</color>
     <color name="blue_700">#052a51</color>
     <color name="blue_800">#042347</color>
-    <color name="blue_900">#021635</color>
     <color name="blue_A100">#6d97ff</color>
-    <color name="blue_A200">#3a73ff</color>
-    <color name="blue_A400">#074fff</color>
-    <color name="blue_A700">#0044ec</color>
 
 </resources>

@@ -16,16 +16,20 @@ import java.util.ArrayList;
 /**
  * Created by Jamal on 13/07/2016.
  */
-
+//This fragment is one of the tabs the user can navigate. It displays all the albums.
 public class AlbumTab extends Fragment {
+    //member variables//
     AlbumTabAdapter adapter;
     ListView lv;
     Manager manager = new Manager();
 
+    //method which returns a new instance of this class
     public static AlbumTab newInstance() {
         return new AlbumTab();
     }
 
+
+    //method which creates the tab and inflates the view
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         final View view = inflater.inflate(R.layout.album_tab, container, false);
@@ -33,49 +37,52 @@ public class AlbumTab extends Fragment {
         return view;
     }
 
+    //method which initialises the tab
     void init(View view) {
         lv = (ListView) view.findViewById(R.id.lv_albums);
-        ArrayList<AlbumModel> albums = manager.getAllAlbumData(getContext());
-        adapter = new AlbumTabAdapter(getContext(), albums);
+        ArrayList<AlbumModel> albums = manager.getAllAlbumData(getContext()); //gets all the albums from the database
+        adapter = new AlbumTabAdapter(getContext(), albums);  //makes a new adapter and passes it the data we want showing
         lv.setAdapter(adapter);
 
     }
 
+
+    //this adapter is used by the listview to display all the albums
     class AlbumTabAdapter extends BaseAdapter {
+        //member variables//
         private ArrayList<AlbumModel> mAlbums;
         private Context mContext;
         private LayoutInflater inflater = null;
 
+        //constructor//
         AlbumTabAdapter(Context context, ArrayList<AlbumModel> albums) {
-            // TODO Auto-generated constructor stub
             mAlbums = albums;
             mContext = context;
             inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         }
 
+        //setters and getters//
         @Override
         public int getCount() {
-            // TODO Auto-generated method stub
             return mAlbums.size();
         }
 
         @Override
         public Object getItem(int position) {
-            // TODO Auto-generated method stub
             return position;
         }
 
         @Override
         public long getItemId(int position) {
-            // TODO Auto-generated method stub
             return position;
         }
 
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
-            // TODO Auto-generated method stub
+            //the holder holds the different views that are then populated for every item in the list
             Holder holder;
             View rowView = convertView;
+            //inflate the view if it's null
             if (rowView == null) {
                 rowView = inflater.inflate(R.layout.album_list, parent, false);
                 holder = new Holder();
@@ -83,7 +90,7 @@ public class AlbumTab extends Fragment {
             } else {
                 holder = (Holder) rowView.getTag();
             }
-
+            //set the correct data to the correct holder
             holder.albumName = (TextView) rowView.findViewById(R.id.album_name);
             holder.albumName.setText(mAlbums.get(position).getAlbum());
             holder.artistName = (TextView) rowView.findViewById(R.id.album_artist);
@@ -97,16 +104,10 @@ public class AlbumTab extends Fragment {
                     startActivity(intent);
                 }
             });
-            rowView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    return false;
-                }
-            });
-
             return rowView;
         }
 
+        //holder which holds the 2 textviews which are then inflated above
         private class Holder {
             TextView albumName;
             TextView artistName;

@@ -1,6 +1,6 @@
 package com.jmulla.musicplayer;
 
-/**
+/***
  * Created by Jamal on 13/07/2016.
  */
 
@@ -8,14 +8,17 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
-public class PagerAdapter extends FragmentPagerAdapter {
-    int mNumOfTabs;
+//adapter used to switch between tabs
+class PagerAdapter extends FragmentPagerAdapter {
     PlaylistsTab playlistsTab;
-    public PagerAdapter(FragmentManager fm, int NumOfTabs) {
+    private int mNumOfTabs;
+
+    PagerAdapter(FragmentManager fm, int NumOfTabs) {
         super(fm);
         this.mNumOfTabs = NumOfTabs;
     }
 
+    //get the fragment to switch to
     @Override
     public Fragment getItem(int position) {
 
@@ -35,6 +38,7 @@ public class PagerAdapter extends FragmentPagerAdapter {
         }
     }
 
+    //get the number of tabs in total
     @Override
     public int getCount() {
         return mNumOfTabs;

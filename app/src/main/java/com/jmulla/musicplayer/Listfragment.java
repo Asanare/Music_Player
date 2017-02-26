@@ -1,6 +1,6 @@
 package com.jmulla.musicplayer;
 
-/**
+/***
  * Created by Jamal on 13/07/2016.
  */
 
@@ -12,15 +12,15 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.util.Pair;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -32,9 +32,8 @@ import java.util.Collections;
 import java.util.Comparator;
 
 public class Listfragment extends Fragment {
-    static ListView lv_search;
+    static RecyclerView lv_search;
     static SongsListAdapter listAdapter;
-
     private static ArrayList<Pair<Long, Song>> mItemArray = new ArrayList<>();
     private static MySwipeRefreshLayout mRefreshLayout;
     Manager manager = new Manager();
@@ -60,7 +59,13 @@ public class Listfragment extends Fragment {
                 result.add(s);
             }
         }
-        lv_search.setAdapter(new SearchAdapter(context, result));
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(context);
+        linearLayoutManager.setOrientation(LinearLayoutManager.VERTICAL);
+/*        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(context,
+                linearLayoutManager.getOrientation());
+        lv_search.addItemDecoration(dividerItemDecoration);*/
+        lv_search.setLayoutManager(linearLayoutManager);
+        lv_search.setAdapter(new SongsRecyclerAdapter(context, result));
     }
 
     public static void makeSearchVisible() {
@@ -207,9 +212,6 @@ public class Listfragment extends Fragment {
 
     }
 
-    void unselect(View view) {
-        view.setBackgroundColor(ContextCompat.getColor(getContext(), R.color.colorPrimaryDark));
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -235,14 +237,10 @@ public class Listfragment extends Fragment {
         mRefreshLayout = (MySwipeRefreshLayout) view.findViewById(R.id.swipe_refresh_layout);
         mDragListView = (DragListView) view.findViewById(R.id.drag_list_view);
         mDragListView.getRecyclerView().setVerticalScrollBarEnabled(true);
-        lv_search = (ListView) view.findViewById(R.id.lv_search);
-        mDragListView.getRecyclerView().setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                CurrentSong.makeToast(v.getContext(), "LONOOOOOOOOOOOOOOOOOOOOOOO");
-                v.setSelected(true);
-            }
-        });
+        mDragListView.getRecyclerView().addItemDecoration(new DividerItemDecoration(getContext(),
+                LinearLayoutManager.VERTICAL));
+        lv_search = (RecyclerView) view.findViewById(R.id.rv_search);
+
 
         mDragListView.setDragListListener(new DragListView.DragListListenerAdapter() {
             @Override
@@ -254,12 +252,6 @@ public class Listfragment extends Fragment {
             @Override
             public void onItemDragEnded(int fromPosition, int toPosition) {
                 mRefreshLayout.setEnabled(true);
-                if (fromPosition != toPosition) {
-                    //Toast.makeText(mDragListView.getContext(), "End - position: " + toPosition, Toast.LENGTH_SHORT).show();
-                }
-/*                if (CurrentSong.audioService != null) {
-                    Manager.currentSongList = listAdapter.allSongs;
-                }*/
             }
 
         });
@@ -299,6 +291,7 @@ public class Listfragment extends Fragment {
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.detach(Listfragment.this).attach(Listfragment.this).commit();
     }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -319,7 +312,7 @@ public class Listfragment extends Fragment {
 
     private static class MyDragItem extends DragItem {
 
-        public MyDragItem(Context context, int layoutId) {
+        MyDragItem(Context context, int layoutId) {
             super(context, layoutId);
         }
 
@@ -344,6 +337,7 @@ public class Listfragment extends Fragment {
         ScanForAudio() {
 
         }
+
         @Override
         protected void onPreExecute() {
             pd_ring = new ProgressDialog(getContext());

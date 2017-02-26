@@ -41,9 +41,7 @@
         android:layout_marginRight="10dp"
         android:indeterminate="false"
         android:max="10000"
-        android:progress="0"
-        android:progressDrawable="@drawable/white_scrubber_progress"
-        android:thumb="@drawable/white_scrubber_control" />
+        android:progress="0" />
 
     <LinearLayout
         android:id="@+id/ll_buttons"

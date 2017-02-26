@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="ViewStyle">
+        <attr name="colorBar1" format="color" />
+        <attr name="colorBar2" format="color" />
+        <attr name="colorAccent" format="color" />
+        <attr name="TB" format="color" />
+    </declare-styleable>
+</resources>

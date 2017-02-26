@@ -13,15 +13,16 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-/**
+/***
  * Created by Jamal on 24/01/2017.
  */
-
+//This activity is used to show all the songs blacklisted by the user
 public class Blacklisted extends AppCompatActivity {
     ArrayList<Song> list = new ArrayList<>();
     ListView listView;
     BlacklistAdapter adapter;
 
+    //constructors//
     public Blacklisted(ArrayList<Song> list) {
         this.list = list;
     }
@@ -30,20 +31,21 @@ public class Blacklisted extends AppCompatActivity {
 
     }
 
+    //method called when this activity is created. Initialises the acitvity and layout
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Utilities.setThemeHere(this);   //set the theme
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_blacklisted);
+        setContentView(R.layout.activity_blacklisted); //set the layout
         listView = (ListView) findViewById(R.id.lv_blacklisted);
         DatabaseHandler dbh = new DatabaseHandler(getApplicationContext());
-        list = dbh.getAllSongs(DatabaseHandler.TABLE_BLACKLIST, true);
-        adapter = new BlacklistAdapter(getBaseContext(), this.list);
-        CurrentSong.makeToast(getBaseContext(), list.size());
-        listView.setAdapter(adapter);
+        list = dbh.getAllSongs(DatabaseHandler.TABLE_BLACKLIST, true);  //get all the blacklisted songs
+        adapter = new BlacklistAdapter(getBaseContext(), this.list);  //create an adapter and give it all the lists
+        listView.setAdapter(adapter);  //set the adpater
 
     }
 
-
+    //adapter used to show all the blacklisted songs
     class BlacklistAdapter extends BaseAdapter {
         private LayoutInflater inflater = null;
         private ArrayList<Song> songs;
@@ -60,16 +62,15 @@ public class Blacklisted extends AppCompatActivity {
 
         @Override
         public Object getItem(int position) {
-            // TODO Auto-generated method stub
             return songs.get(position);
         }
 
         @Override
         public long getItemId(int position) {
-            // TODO Auto-generated method stub
             return position;
         }
 
+        //method which inflates each row with the correct details of the blacklisted song
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
             Holder holder;
@@ -87,6 +88,7 @@ public class Blacklisted extends AppCompatActivity {
             holder.mArtist = (TextView) rowView.findViewById(R.id.tv_artist);
             holder.mArtist.setText(songs.get(position).artist);
             holder.mRemove = (ImageView) rowView.findViewById(R.id.remove_from_blacklist);
+            //if the user clicks the remove button, the song is no longer blacklisted
             holder.mRemove.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -98,26 +100,10 @@ public class Blacklisted extends AppCompatActivity {
                     Listfragment.listAdapter.notifyDataSetChanged();
                 }
             });
-/*            rowView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Manager.currentSongList = songs;
-                    Manager.currentSong = songs.get(position);
-                    //String songId = allSongs.get(position).id;
-                    Intent intent = new Intent(getBaseContext(), CurrentSong.class);
-                    intent.putExtra("START_POSITION", position);
-                    v.getContext().startActivity(intent);
-                }
-            });
-            rowView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    return false;
-                }
-            });*/
             return rowView;
         }
 
+        //class to hold the views that will be inflated
         private class Holder {
             TextView mTitle;
             TextView mArtist;
