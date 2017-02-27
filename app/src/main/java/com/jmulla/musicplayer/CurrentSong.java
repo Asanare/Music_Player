@@ -27,7 +27,7 @@ import android.widget.Toast;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 
-//This activity is where the user can interact with the song playback and can
+//This activity is where the user can interact with the song playback
 public class CurrentSong extends AppCompatActivity {
     //define member variables
     static boolean is_paused = false;
